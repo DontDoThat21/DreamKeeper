@@ -8,7 +8,7 @@
             Padding="30,0"
             Spacing="25">
 
-            <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" ColumnDefinitions="*,*" RowSpacing="15">
+            <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" ColumnDefinitions="*,*" RowSpacing="15" BackgroundColor="Green">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="2.5*" />
                     <RowDefinition Height="2*" />
@@ -25,7 +25,27 @@
                     </StackLayout>
                 </Frame>
 
-                <Frame BorderColor="Cyan" Grid.Row="1" Grid.ColumnSpan="2">
+                <CollectionView ItemsSource="{Binding dreams}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BorderColor="Cyan" Grid.Row="1" Grid.ColumnSpan="2">
+                                <StackLayout>
+
+                                    <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
+
+                                        <Label Text="{Binding DreamName}" Grid.Column="0" FontAttributes="Bold"/>
+                                        <Label Text="{Binding DreamDate}" Grid.Column="2"/>
+                                        <Label Text="🎤" Grid.Column="3" Grid.Row="0"/>
+
+                                        <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
+                                    </Grid>
+                                </StackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!--<Frame BorderColor="Cyan" Grid.Row="1" Grid.ColumnSpan="2">
                     <StackLayout>
 
                         <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
@@ -37,9 +57,9 @@
                             <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
                         </Grid>
                     </StackLayout>
-                </Frame>
+                </Frame>-->
 
-                <Frame BorderColor="Orange" Grid.Row="2" Grid.ColumnSpan="2">
+                <!--<Frame BorderColor="Orange" Grid.Row="2" Grid.ColumnSpan="2">
                     <StackLayout>
 
                         <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
@@ -90,7 +110,7 @@
                             <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
                         </Grid>
                     </StackLayout>
-                </Frame>
+                </Frame>-->
 
             </Grid>
             
