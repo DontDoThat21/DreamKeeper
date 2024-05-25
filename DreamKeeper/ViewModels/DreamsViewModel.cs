@@ -12,27 +12,27 @@ namespace DreamKeeper.ViewModels
     public class DreamsViewModel
     {
         private readonly DreamService _dreamService;
-        public ObservableCollection<Dream> Dreams { get; set; }
+        public List<Dream> Dreams { get; set; }
 
         public DreamsViewModel(DreamService dreamService)
         {
             _dreamService = dreamService;
-            Dreams = new ObservableCollection<Dream>();
-            PopulateDreams();
+            Dreams = _dreamService.GetDreams();
+            //PopulateDreams();
         }
 
-        private void PopulateDreams()
-        {
-
-            // Call GetDreams() method to fetch dreams
-            var dreamList = _dreamService.GetDreams();
-
-            // Populate dreams collection with fetched dreams
-            foreach (var dream in dreamList)
-            {
-                Dreams.Add(dream);
-            }
-        }
+        //private void PopulateDreams()
+        //{
+        //
+        //    // Call GetDreams() method to fetch dreams
+        //    var dreamList = _dreamService.GetDreams();
+        //
+        //    // Populate dreams collection with fetched dreams
+        //    foreach (var dream in dreamList)
+        //    {
+        //        Dreams.Add(dream);
+        //    }
+        //}
 
     }
 }

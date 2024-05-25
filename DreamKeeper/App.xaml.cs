@@ -1,4 +1,6 @@
-﻿namespace DreamKeeper
+﻿using DreamKeeper.Data;
+
+namespace DreamKeeper
 {
     public partial class App : Application
     {
@@ -8,5 +10,6 @@
 
             MainPage = new AppShell();
         }
+
     }
 }

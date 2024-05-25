@@ -1,7 +1,7 @@
 ﻿using DreamKeeper.Data;
+using DreamKeeper.Data.Services;
 using DreamKeeper.Services;
 using DreamKeeper.ViewModels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DreamKeeper
@@ -20,10 +20,7 @@ namespace DreamKeeper
                 });
 
             // Register database context as a service
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlite("Data Source=app.db");
-            });
+
 
             //builder.Services.AddTransient<DreamService>(); // Register DreamService if needed
 
@@ -32,7 +29,11 @@ namespace DreamKeeper
             //builder.Services.AddSingleton<MainPage>(); // Register MainPage if needed
 
 #if DEBUG
+            SQLiteDbService.DisposeDatabase();
+            SQLiteDbService.InitializeDatabase();
             builder.Logging.AddDebug();
+#else
+            SqliteDbService.InitializeDatabase();
 #endif
 
             return builder.Build();

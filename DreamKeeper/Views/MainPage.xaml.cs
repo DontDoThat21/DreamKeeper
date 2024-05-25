@@ -2,7 +2,7 @@
 using DreamKeeper.Models;
 using DreamKeeper.Services;
 using DreamKeeper.ViewModels;
-using Microsoft.EntityFrameworkCore;
+using DreamKeeper.Views;
 using System.Collections.ObjectModel;
 
 namespace DreamKeeper
@@ -13,39 +13,35 @@ namespace DreamKeeper
         //ObservableCollection<DreamsViewModel> DreamsList { get; set; }
 
         private readonly DreamsViewModel _viewModel;
-        private readonly DbContextOptions<AppDbContext> _dbContextOptions;
         public DreamService _dreamService { get; }
 
         public MainPage()
         {
-
-            //DreamsList = new ObservableCollection<DreamsViewModel>()
-            //{    
-            //    new DreamsViewModel 
-            //    { dreams = new ObservableCollection<Dream>() {
-            //            new Dream()
-            //            {
-            //                Id = 1, DreamName = "Test data.", DreamDescription = "Test desc.", DreamDate = DateTime.Now, DreamRecording = null
-            //            },
-            //            new Dream()
-            //            {
-            //                Id = 2, DreamName = "Test data 2.", DreamDescription = "Test desc 2.", DreamDate = DateTime.Now, DreamRecording = null
-            //            }
-            //        }
-            //    }
-            //};
-
             InitializeComponent();
 
-            _dbContextOptions = new DbContextOptions<AppDbContext>();
-            _dreamService = new DreamService(_dbContextOptions); // Instantiate DreamService here
+            _dreamService = new DreamService(); // Instantiate DreamService here
             _viewModel = new DreamsViewModel(_dreamService);
             BindingContext = _viewModel;
         }
 
+        private void DreamAddButton_ClickedAsync(object sender, EventArgs e)
+        {
+            var dreamEntryPage = new DreamEntryPage();
+            dreamEntryPage.DreamSaved += DreamEntryPage_DreamSaved;
+            Navigation.PushModalAsync(new NavigationPage(dreamEntryPage));
+        }
+
+        private async void DreamEntryPage_DreamSaved(object sender, Dream dream)
+        {
+            // Handle the received dream details here
+            _dreamService.AddDream(dream);
+
+            // Close the sub-content view
+            await Navigation.PopModalAsync();
+        }
         //private void OnCounterClicked(object sender, EventArgs e)
         //{
-            //count++;
+        //count++;
         //}
     }
 
