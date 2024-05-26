@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DreamKeeper.Views.DreamEntryPage"
              Title="DreamEntryPage"
-             BackgroundColor="GhostWhite">
+             BackgroundColor="#303030">
     <StackLayout Padding="20">
         <Entry x:Name="DreamNameEntry" Placeholder="Enter dream title" />
         <Entry x:Name="DreamDescriptionEntry" Placeholder="Enter dream details" />

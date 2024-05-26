@@ -29,7 +29,7 @@ namespace DreamKeeper
             //builder.Services.AddSingleton<MainPage>(); // Register MainPage if needed
 
 #if DEBUG
-            SQLiteDbService.DisposeDatabase();
+            //SQLiteDbService.DisposeDatabase();
             SQLiteDbService.InitializeDatabase();
             builder.Logging.AddDebug();
 #else

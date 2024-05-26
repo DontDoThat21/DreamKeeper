@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="DreamKeeper.MainPage">
+             x:Class="DreamKeeper.MainPage"
+             BackgroundColor="#303030">
 
     <ScrollView>
         <VerticalStackLayout
@@ -17,7 +18,7 @@
                                 <Label Grid.Row="0" Grid.Column="1" Text="Good morning, {Name}!"/>
                                 <Label Grid.Row="1" Grid.Column="1" Text="Add new dream?"/>
                                 <Button Clicked="DreamAddButton_ClickedAsync" Text="➕" Grid.Row="1" Grid.Column="1" WidthRequest="200" BackgroundColor="Cyan"/>
-                            </Grid>                            
+                            </Grid>
                         </StackLayout>
                     </Frame>
 
@@ -27,13 +28,18 @@
                                 <Frame BorderColor="Cyan" Grid.Row="1" Grid.ColumnSpan="2">
                                     <StackLayout>
 
-                                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, 2*, 2*, Auto" RowDefinitions="1*, 3*, 3*" RowSpacing="5">
+                                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, 2*, 1*, .75*, Auto" RowDefinitions="1*, 3*, 3*" RowSpacing="5">
 
                                             <Label Text="{Binding DreamName}" Grid.Column="0" FontAttributes="Bold"/>
                                             <Label Text="{Binding DreamDate}" Grid.Column="4"/>
-                                            <Label Text="🎤" Grid.Column="5" Grid.Row="0"/>
+                                            <Label Text="🎤" Grid.Column="6" Grid.Row="0" FontSize="30"/>
 
                                             <Entry HeightRequest="90" Placeholder="Enter dream details here..." Text="{Binding DreamDescription}" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2"/>
+
+                                            <Button BackgroundColor="#353535" Text="⌫" Grid.Column="5" Grid.Row="2" FontSize="30" TextColor="OrangeRed"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteDreamCommand}"
+                                                    CommandParameter="{Binding}"/>
+
                                         </Grid>
                                     </StackLayout>
                                 </Frame>
@@ -41,133 +47,10 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                </Grid>               
-                
+                </Grid>
+
 
             </Grid>
-
-            <!--<Frame BorderColor="Cyan" Grid.Row="1" Grid.ColumnSpan="2">
-                    <StackLayout>
-
-                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
-
-                            <Label Text="[Dream Title]" Grid.Column="0"/>
-                            <Label Text="[Date]" Grid.Column="2"/>
-                            <Label Text="🎤" Grid.Column="3" Grid.Row="0"/>
-
-                            <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
-                        </Grid>
-                    </StackLayout>
-                </Frame>-->
-
-                <!--<Frame BorderColor="Orange" Grid.Row="2" Grid.ColumnSpan="2">
-                    <StackLayout>
-
-                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
-
-                            <Label Text="[Dream Title]" Grid.Column="0"/>
-                            <Label Text="[Date]" Grid.Column="2"/>
-                            <Label Text="🎤" Grid.Column="3"/>
-
-                            <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
-                        </Grid>
-                    </StackLayout>
-                </Frame>
-                <Frame BorderColor="Blue" Grid.Row="3" Grid.ColumnSpan="2">
-                    <StackLayout>
-
-                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
-
-                            <Label Text="[Dream Title]" Grid.Column="0"/>
-                            <Label Text="[Date]" Grid.Column="2"/>
-                            <Label Text="🎤" Grid.Column="3"/>
-
-                            <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
-                        </Grid>
-                    </StackLayout>
-                </Frame>
-                <Frame BorderColor="Red" Grid.Row="4" Grid.ColumnSpan="2">
-                    <StackLayout>
-
-                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
-
-                            <Label Text="[Dream Title]" Grid.Column="0"/>
-                            <Label Text="[Date]" Grid.Column="2"/>
-                            <Label Text="🎤" Grid.Column="3"/>
-
-                            <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
-                        </Grid>
-                    </StackLayout>
-                </Frame>
-                <Frame BorderColor="Green" Grid.Row="5" Grid.ColumnSpan="2">
-                    <StackLayout>
-
-                        <Grid ColumnDefinitions="2.25*, 2.25*, 2.25*, Auto" RowDefinitions="1*, 3*">
-
-                            <Label Text="[Dream Title]" Grid.Column="0"/>
-                            <Label Text="[Date]" Grid.Column="2"/>
-                            <Label Text="🎤" Grid.Column="3"/>
-
-                            <Entry Placeholder="Enter dream details here..." Grid.Row="1"/>
-                        </Grid>
-                    </StackLayout>
-                </Frame>
-
-            </Grid> -->
-
-
-            <!--<Frame BackgroundColor="Green">
-                <Grid ColumnDefinitions = "2.25*, 2.25*, 2.25*, 2.25*, 1*" RowDefinitions="2.5*,2*,2*,2*,2*">
-
-                    <Frame Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Grid.RowSpan="4">
-                        <StackLayout>
-                            <Label Text="Good morning, {Name}!"/>
-                            <Button Text="➕" Grid.Row="0" Grid.Column="4"/>
-                        </StackLayout>
-                    </Frame>
-
-                    <Frame BorderColor="Yellow" Grid.Row="5" Grid.ColumnSpan="5">
-                        <StackLayout>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2.25*" />
-                                    <ColumnDefinition Width="2.25*" />
-                                    <ColumnDefinition Width="2.25*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                <Label Text="[Dream Title]" Grid.Column="0"/>
-                                <Label Text="[Date]" Grid.Column="2"/>
-                                <Label Text="🎤" Grid.Column="3"/>
-
-                                <Entry Placeholder="Enter dream details here..."/>
-                            </Grid>
-                        </StackLayout>
-                    </Frame>
-
-                    <Frame BorderColor="Blue" Grid.Row="5" Grid.ColumnSpan="5">
-                        <StackLayout>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2.25*" />
-                                    <ColumnDefinition Width="2.25*" />
-                                    <ColumnDefinition Width="2.25*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                <Label Text="[Dream Title]" Grid.Column="0"/>
-                                <Label Text="[Date]" Grid.Column="2"/>
-                                <Label Text="🎤" Grid.Column="3"/>
-
-                                <Entry Placeholder="Enter dream details here..."/>
-                            </Grid>
-                        </StackLayout>
-                    </Frame>
-
-                </Grid>
-            </Frame>-->
 
         </VerticalStackLayout>
     </ScrollView>

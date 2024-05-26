@@ -1,8 +1,10 @@
 ﻿using Dapper;
 using DreamKeeper.Data.Services;
 using DreamKeeper.Models;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,35 +20,55 @@ namespace DreamKeeper.Services
         //    _dbContextOptions = dbContextOptions;
         //}
 
-        public List<Dream> GetDreams()
+        public ObservableCollection<Dream> GetDreams()
         {
             using var connection = SQLiteDbService.CreateConnection();
             connection.Open();
 
             // get dreams
             var selectDreamsSql = "Select * FROM Dreams;";
-            var dreams = connection.Query<Dream>(selectDreamsSql).ToList();
-            return dreams;            
+            var dreamsList = connection.Query<Dream>(selectDreamsSql);
+            var Dreams = new ObservableCollection<Dream>(dreamsList);
+            return Dreams;            
         }
 
         public Dream AddDream(Dream newDream)
+        {            
+            try
+            {
+                using var connection = SQLiteDbService.CreateConnection();
+                connection.Open();
+
+                // add dream
+                var insertDreamSql = @"
+                        INSERT INTO Dreams (DreamName, DreamDescription, DreamDate, DreamRecording)
+                        VALUES (@DreamName, @DreamDescription, @DreamDate, @DreamRecording);
+                        SELECT last_insert_rowid();";
+                // Insert dream into the database
+                int dreamId = connection.ExecuteScalar<int>(insertDreamSql, newDream);
+
+                newDream.Id = dreamId;
+
+                //GetDreams();
+                return newDream;
+            }
+            catch (Exception Ex)
+            {
+                newDream.Id = -1;
+                newDream.DreamDescription = Ex.Message;
+
+            }
+
+            return newDream; 
+            
+        }
+
+        public void DeleteDream(int dreamId)
         {
             using var connection = SQLiteDbService.CreateConnection();
             connection.Open();
 
-            // add dream
-            var insertDreamSql = @"
-                        INSERT INTO Dreams (DreamName, DreamDescription, DreamDate, DreamRecording)
-                        VALUES (@DreamName, @DreamDescription, @DreamDate, @DreamRecording);
-                        SELECT last_insert_rowid();";
-            // Insert dream into the database
-            int dreamId = connection.ExecuteScalar<int>(insertDreamSql, newDream);
-
-            newDream.Id = dreamId;
-
-            GetDreams();
-            return newDream;
-            
+            connection.Execute("DELETE FROM Dreams WHERE Id = @Id", new { Id = dreamId });
         }
 
     }

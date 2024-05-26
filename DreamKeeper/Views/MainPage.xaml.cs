@@ -9,8 +9,6 @@ namespace DreamKeeper
 {
     public partial class MainPage : ContentPage
     {
-        //int count = 0;
-        //ObservableCollection<DreamsViewModel> DreamsList { get; set; }
 
         private readonly DreamsViewModel _viewModel;
         public DreamService _dreamService { get; }
@@ -24,25 +22,34 @@ namespace DreamKeeper
             BindingContext = _viewModel;
         }
 
-        private void DreamAddButton_ClickedAsync(object sender, EventArgs e)
+        private async void DreamAddButton_ClickedAsync(object sender, EventArgs e)
         {
             var dreamEntryPage = new DreamEntryPage();
             dreamEntryPage.DreamSaved += DreamEntryPage_DreamSaved;
-            Navigation.PushModalAsync(new NavigationPage(dreamEntryPage));
+            await Navigation.PushModalAsync(new NavigationPage(dreamEntryPage));
         }
 
         private async void DreamEntryPage_DreamSaved(object sender, Dream dream)
         {
-            // Handle the received dream details here
-            _dreamService.AddDream(dream);
+            var newDream = _dreamService.AddDream(dream);
+            if (newDream.Id == -1)
+            {
+                await DisplayAlert("An error has occurred.", newDream.DreamDescription, "Cancel");
+            }
+            else
+            {
+                // No error(s).
+                _viewModel.Dreams.Add(dream); // Adding the dream to the ObservableCollection
+            }
 
             // Close the sub-content view
             await Navigation.PopModalAsync();
         }
-        //private void OnCounterClicked(object sender, EventArgs e)
-        //{
-        //count++;
-        //}
+
+        private async void DreamRemoveButton_ClickedAsync(object sender, EventArgs e)
+        {
+
+        }
     }
 
 }
