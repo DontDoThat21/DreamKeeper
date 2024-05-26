@@ -71,5 +71,13 @@ namespace DreamKeeper.Services
             connection.Execute("DELETE FROM Dreams WHERE Id = @Id", new { Id = dreamId });
         }
 
+        public void UpdateDream(Dream dream)
+        {
+            using var connection = SQLiteDbService.CreateConnection();
+            connection.Open();
+
+            connection.Execute("UPDATE Dreams SET DreamName = @DreamName, DreamDescription = @DreamDescription, DreamDate = @DreamDate, DreamRecording = @DreamRecording WHERE Id = @Id", dream);
+        }
+
     }
 }

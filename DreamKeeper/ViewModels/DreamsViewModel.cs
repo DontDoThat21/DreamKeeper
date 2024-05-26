@@ -1,5 +1,6 @@
 ﻿using DreamKeeper.Models;
 using DreamKeeper.Services;
+using Plugin.AudioRecorder;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +15,9 @@ namespace DreamKeeper.ViewModels
     public class DreamsViewModel
     {
         private readonly DreamService _dreamService;
+        private readonly AudioRecorderService _audioRecorderService;
+        private bool _isRecording;
+        private string _recordingDuration;
         public ObservableCollection<Dream> Dreams { get; set; }
 
         public DreamsViewModel(DreamService dreamService)
@@ -21,7 +25,9 @@ namespace DreamKeeper.ViewModels
             _dreamService = dreamService;
             Dreams = _dreamService.GetDreams();
             DeleteDreamCommand = new Command<Dream>(async (dream) => await OnDeleteDream(dream));
-            //PopulateDreams();
+            StartRecordingCommand = new Command<Dream>(async (dream) => await OnStartRecording(dream));
+            _audioRecorderService = new AudioRecorderService();
+            _elapsedTime = TimeSpan.Zero;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -50,6 +56,44 @@ namespace DreamKeeper.ViewModels
         }
 
         public ICommand DeleteDreamCommand { get; }
+        public ICommand StartRecordingCommand { get; }
+
+
+        private TimeSpan _elapsedTime;
+        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(1);
+
+        private async Task OnStartRecording(Dream dream)
+        {
+            if (_isRecording)
+            {
+                // Stop recording
+                _isRecording = false;
+                await _audioRecorderService.StopRecording();
+                RecordingDuration = string.Empty;
+            }
+            else
+            {
+                // Start recording
+                await _audioRecorderService.StartRecording();
+                _isRecording = true;
+                Device.StartTimer(_updateInterval, () =>
+                {
+                    _elapsedTime += _updateInterval;
+                    RecordingDuration = _elapsedTime.ToString(@"hh\:mm\:ss");
+                    return _isRecording;
+                });
+            }
+        }
+
+        public string RecordingDuration
+        {
+            get => _recordingDuration;
+            set
+            {
+                _recordingDuration = value;
+                OnPropertyChanged(nameof(RecordingDuration));
+            }
+        }
 
     }
 }

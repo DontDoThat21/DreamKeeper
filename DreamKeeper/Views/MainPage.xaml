@@ -32,7 +32,9 @@
 
                                             <Label Text="{Binding DreamName}" Grid.Column="0" FontAttributes="Bold"/>
                                             <Label Text="{Binding DreamDate}" Grid.Column="4"/>
-                                            <Label Text="🎤" Grid.Column="6" Grid.Row="0" FontSize="30"/>
+                                            <Button BackgroundColor="#454545" Text="🎤" Grid.Column="6" Grid.Row="0" FontSize="30"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.StartRecordingCommand}"
+                                                    CommandParameter="{Binding}"/>
 
                                             <Entry HeightRequest="90" Placeholder="Enter dream details here..." Text="{Binding DreamDescription}" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2"/>
 
