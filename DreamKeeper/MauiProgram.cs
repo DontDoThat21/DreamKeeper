@@ -1,8 +1,10 @@
 ﻿using DreamKeeper.Data;
+using DreamKeeper.Data.Data;
 using DreamKeeper.Data.Services;
 using DreamKeeper.Services;
 using DreamKeeper.ViewModels;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 
 namespace DreamKeeper
 {
@@ -27,6 +29,20 @@ namespace DreamKeeper
             //builder.Services.AddTransient<DreamsViewModel>(); // Register DreamsViewModel if needed
 
             //builder.Services.AddSingleton<MainPage>(); // Register MainPage if needed
+
+            builder.Services.AddSingleton<DreamsViewModel>();
+
+            // Register platform-specific implementations for IAudioRecorderService
+            builder.Services.AddSingleton<IAudioRecorderService>(s =>
+            {
+#if ANDROID
+                return new YourNamespace.Droid.Services.AudioRecorderService();
+#elif IOS
+                return new YourNamespace.iOS.Services.AudioRecorderService();
+#else
+                throw new NotImplementedException("Audio recording is not implemented for this platform.");
+#endif
+            });
 
 #if DEBUG
             //SQLiteDbService.DisposeDatabase();

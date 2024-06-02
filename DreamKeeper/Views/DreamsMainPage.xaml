@@ -1,8 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:DreamKeeper.Services"
              x:Class="DreamKeeper.MainPage"
              BackgroundColor="#303030">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout
@@ -32,13 +39,21 @@
 
                                             <Label Text="{Binding DreamName}" Grid.Column="0" FontAttributes="Bold"/>
                                             <Label Text="{Binding DreamDate}" Grid.Column="4"/>
-                                            <Button BackgroundColor="#454545" Text="🎤" Grid.Column="6" Grid.Row="0" FontSize="30"
-                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.StartRecordingCommand}"
+                                            <Button BackgroundColor="Yellow" FontSize="30" TextColor="Orange"
+                                                    Clicked="OnToggleRecordingClicked"
+                                                    Text="{Binding IsRecording, Converter={StaticResource BoolToRecordingTextConverter}}"/>
+
+                                            <Button BackgroundColor="Green" FontSize="30" TextColor="Purple" Grid.Column="5" Grid.Row="1"
+                                                    Command="{Binding ToggleRecordingCommand}"
+                                                    Text="test"/>
+
+                                            <Button BackgroundColor="#454545" Text="PLAY" Grid.Column="6" Grid.Row="1" FontSize="30"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PlayRecordingCommand}"
                                                     CommandParameter="{Binding}"/>
 
                                             <Entry HeightRequest="90" Placeholder="Enter dream details here..." Text="{Binding DreamDescription}" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2"/>
 
-                                            <Button BackgroundColor="#353535" Text="⌫" Grid.Column="5" Grid.Row="2" FontSize="30" TextColor="OrangeRed"
+                                            <Button BackgroundColor="#353535" Text="⌫" Grid.Column="4"  Grid.Row="2" FontSize="30" TextColor="OrangeRed"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteDreamCommand}"
                                                     CommandParameter="{Binding}"/>
 

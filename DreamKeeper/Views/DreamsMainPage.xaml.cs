@@ -3,6 +3,7 @@ using DreamKeeper.Models;
 using DreamKeeper.Services;
 using DreamKeeper.ViewModels;
 using DreamKeeper.Views;
+using Plugin.Maui.Audio;
 using System.Collections.ObjectModel;
 
 namespace DreamKeeper
@@ -12,13 +13,15 @@ namespace DreamKeeper
 
         private readonly DreamsViewModel _viewModel;
         public DreamService _dreamService { get; }
+        public IAudioManager _audioManager { get; }
 
         public MainPage()
         {
             InitializeComponent();
 
             _dreamService = new DreamService(); // Instantiate DreamService here
-            _viewModel = new DreamsViewModel(_dreamService);
+            _audioManager = new AudioManager();
+            _viewModel = new DreamsViewModel(_dreamService, _audioManager);
             BindingContext = _viewModel;
         }
 
@@ -49,6 +52,11 @@ namespace DreamKeeper
         private async void DreamRemoveButton_ClickedAsync(object sender, EventArgs e)
         {
 
+        }
+
+        private async void OnToggleRecordingClicked(object sender, EventArgs e)
+        {
+            await _viewModel.ToggleRecording();
         }
     }
 

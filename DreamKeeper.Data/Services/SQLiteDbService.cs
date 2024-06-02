@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DreamKeeper.Data.Models;
 using Microsoft.Data.Sqlite;
 using Muffle.Data.Services;
 using System;
@@ -63,6 +64,20 @@ namespace DreamKeeper.Data.Services
             connection.Open();
             var dropDreamsTable = "DROP TABLE IF EXISTS Dreams";
             connection.Execute(dropDreamsTable);
+        }
+
+        public static async Task<int> SaveRecordingAsync(AudioRecording recording)
+        {
+            using var connection = CreateConnection();
+            var query = "INSERT INTO Dreams (DreamRecording) VALUES (@AudioData); SELECT last_insert_rowid()";
+            return await connection.ExecuteScalarAsync<int>(query, new { AudioData = recording.AudioData });
+        }
+
+        public static async Task<AudioRecording> GetRecordingAsync(int id)
+        {
+            using var connection = CreateConnection();
+            var query = "SELECT Id, DreamRecording AS AudioData FROM Dreams WHERE Id = @Id";
+            return await connection.QuerySingleOrDefaultAsync<AudioRecording>(query, new { Id = id });
         }
     }
 }
