@@ -58,6 +58,19 @@ namespace DreamKeeper
         {
             await _viewModel.ToggleRecording();
         }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            var bytestosave = _viewModel.AudioElements[2];
+            var bytestosaveReal = bytestosave.AudioData;
+            using (FileStream fs = new FileStream("C:\\Users\\Tylor\\Desktop\\file.mp3",
+                FileMode.Create, FileAccess.Write))
+            {
+                // Write the bytes to the file
+                fs.Write(bytestosaveReal, 0, bytestosaveReal.Length);
+            }
+            var yuwaduh = _viewModel.AudioElements;
+        }
     }
 
 }

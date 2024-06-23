@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:DreamKeeper.Services"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:data="clr-namespace:DreamKeeper.Data"
              x:Class="DreamKeeper.MainPage"
              BackgroundColor="#303030">
 
@@ -9,6 +11,19 @@
         <ResourceDictionary>
             <local:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter"/>
         </ResourceDictionary>
+
+        <DataTemplate x:Key="BaseMediaElementTemplate">
+            <toolkit:MediaElement Grid.Column="1" Grid.ColumnSpan="3" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="ByteArrayMediaElementTemplate">
+            <data:ByteArrayMediaElement Grid.Column="1" Grid.ColumnSpan="3"
+                                         AudioData="{Binding DreamRecording}" />
+        </DataTemplate>
+
+        <data:MediaElementTemplateSelector x:Key="MediaElementTemplateSelector"
+                                           BaseMediaElementTemplate="{StaticResource BaseMediaElementTemplate}"
+                                           ByteArrayMediaElementTemplate="{StaticResource ByteArrayMediaElementTemplate}" />
     </ContentPage.Resources>
 
     <ScrollView>
@@ -29,7 +44,9 @@
                         </StackLayout>
                     </Frame>
 
-                    <CollectionView ItemsSource="{Binding Dreams}" Grid.Row="1">
+                    <CollectionView ItemsSource="{Binding Dreams}" Grid.Row="1"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedDream}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame BorderColor="Cyan" Grid.Row="1" Grid.ColumnSpan="2">
@@ -39,17 +56,15 @@
 
                                             <Label Text="{Binding DreamName}" Grid.Column="0" FontAttributes="Bold"/>
                                             <Label Text="{Binding DreamDate}" Grid.Column="4"/>
-                                            <Button BackgroundColor="Yellow" FontSize="30" TextColor="Orange"
+                                            <Button BackgroundColor="Yellow" FontSize="30" TextColor="Orange" Grid.Column="6"
                                                     Clicked="OnToggleRecordingClicked"
                                                     Text="{Binding IsRecording, Converter={StaticResource BoolToRecordingTextConverter}}"/>
-
-                                            <Button BackgroundColor="Green" FontSize="30" TextColor="Purple" Grid.Column="5" Grid.Row="1"
-                                                    Command="{Binding ToggleRecordingCommand}"
+                                            
+                                            <Button BackgroundColor="Blue" FontSize="30" TextColor="Orange" Grid.Column="6" Grid.Row="1"
+                                                    Clicked="Button_Clicked"
                                                     Text="test"/>
 
-                                            <Button BackgroundColor="#454545" Text="PLAY" Grid.Column="6" Grid.Row="1" FontSize="30"
-                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PlayRecordingCommand}"
-                                                    CommandParameter="{Binding}"/>
+                                            <data:ByteArrayMediaElement x:Name="audioPlayer" Grid.Column="1" Grid.ColumnSpan="3" AudioData="{Binding DreamRecording}"/>
 
                                             <Entry HeightRequest="90" Placeholder="Enter dream details here..." Text="{Binding DreamDescription}" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2"/>
 
