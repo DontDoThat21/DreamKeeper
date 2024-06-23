@@ -5,6 +5,7 @@ using DreamKeeper.Services;
 using DreamKeeper.ViewModels;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.Audio;
+using CommunityToolkit.Maui;
 
 namespace DreamKeeper
 {
@@ -13,8 +14,8 @@ namespace DreamKeeper
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
+            builder.UseMauiApp<App>()
+                .UseMauiCommunityToolkitMediaElement()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -22,16 +23,10 @@ namespace DreamKeeper
                 });
 
             // Register database context as a service
-
-
             //builder.Services.AddTransient<DreamService>(); // Register DreamService if needed
-
             //builder.Services.AddTransient<DreamsViewModel>(); // Register DreamsViewModel if needed
-
             //builder.Services.AddSingleton<MainPage>(); // Register MainPage if needed
-
             builder.Services.AddSingleton<DreamsViewModel>();
-
             // Register platform-specific implementations for IAudioRecorderService
             builder.Services.AddSingleton<IAudioRecorderService>(s =>
             {
@@ -43,7 +38,6 @@ namespace DreamKeeper
                 throw new NotImplementedException("Audio recording is not implemented for this platform.");
 #endif
             });
-
 #if DEBUG
             //SQLiteDbService.DisposeDatabase();
             SQLiteDbService.InitializeDatabase();
@@ -51,7 +45,6 @@ namespace DreamKeeper
 #else
             SqliteDbService.InitializeDatabase();
 #endif
-
             return builder.Build();
         }
     }
