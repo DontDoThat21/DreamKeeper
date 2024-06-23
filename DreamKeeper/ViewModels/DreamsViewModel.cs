@@ -1,4 +1,7 @@
-﻿using DreamKeeper.Data.Models;
+﻿using CommunityToolkit.Maui.Views;
+using Dapper;
+using DreamKeeper.Data;
+using DreamKeeper.Data.Models;
 using DreamKeeper.Data.Services;
 using DreamKeeper.Models;
 using DreamKeeper.Services;
@@ -16,7 +19,7 @@ using System.Windows.Input;
 
 namespace DreamKeeper.ViewModels
 {
-    public class DreamsViewModel
+    public class DreamsViewModel : INotifyPropertyChanged
     {
         private readonly DreamService _dreamService;
         private readonly IAudioManager _audioManager;
@@ -24,25 +27,107 @@ namespace DreamKeeper.ViewModels
         private bool _isRecording;
         private string _recordingDuration;
         private int _lastRecordingId;
+        private Dream _selectedDream;
+
+        public bool IsRecording
+        {
+            get => _isRecording;
+            set
+            {
+                _isRecording = value;
+                OnPropertyChanged(nameof(IsRecording));
+            }
+        }
+
+        public Dream SelectedDream
+        {
+            get => _selectedDream;
+            set
+            {
+                _selectedDream = value;
+                OnPropertyChanged(nameof(SelectedDream));
+            }
+        }
+
+        private MediaElement _audioPlayer;
+        public MediaElement AudioPlayer
+        {
+            get => _audioPlayer;
+            set
+            {
+                _audioPlayer = value;
+                OnPropertyChanged(nameof(AudioPlayer));
+            }
+        }
 
         public ICommand ToggleRecordingCommand { get; set; }
         public ICommand PlayRecordingCommand { get; }
 
         public ObservableCollection<Dream> Dreams { get; set; }
+        public ObservableCollection<ByteArrayMediaElement> AudioElements { get; } = new ObservableCollection<ByteArrayMediaElement>();
+
 
         public DreamsViewModel(DreamService dreamService, IAudioManager audioManager)
         {
             _dreamService = dreamService;
-            Dreams = _dreamService.GetDreams();
-            //DeleteDreamCommand = new Command<Dream>(async (dream) => await OnDeleteDream(dream));
+            DeleteDreamCommand = new Command<Dream>(async (dream) => await OnDeleteDream(dream));
             _audioManager = audioManager;
             _audioRecorder = audioManager.CreateRecorder();
             _elapsedTime = TimeSpan.Zero;
 
             ToggleRecordingCommand = new Command(async () => await ToggleRecording());
-            //StopRecordingCommand = new Command(async () => await StopRecording());
-            PlayRecordingCommand = new Command(async () => await PlayRecording());
+            PlayRecordingCommand = new Command<Dream>(PlayRecording);
+            Dreams = new ObservableCollection<Dream>();
 
+            AudioElements = new ObservableCollection<ByteArrayMediaElement>();
+            PerformInitialSetup();
+            // Load dreams and populate audio elements asynchronously
+
+        }
+
+        private async void PerformInitialSetup()
+        {
+            await LoadDreamsAndAudioElements();
+        }
+
+        private async Task LoadDreamsAndAudioElements()
+        {
+            // Load dreams asynchronously
+            var loadedDreams = await _dreamService.GetDreams();
+
+            // Populate the Dreams collection
+            foreach (var dream in loadedDreams)
+            {
+                Dreams.Add(dream);
+
+                // Create MediaElement from dream recording byte array
+                var audioElement = CreateMediaElementFromByteArray(dream.DreamRecording);
+                AudioElements.Add(audioElement);
+            }
+        }
+
+        private ByteArrayMediaElement CreateMediaElementFromByteArray(byte[] audioData)
+        {
+            // Create MediaElement
+            //MediaElement mediaElement = new MediaElement();
+            ByteArrayMediaElement byteArrayMediaElement = new ByteArrayMediaElement();
+
+            try
+            {
+                // Convert byte array to Stream
+                Stream stream = new MemoryStream(audioData);
+                
+                ByteArrayMediaSource src = new ByteArrayMediaSource(audioData);
+                //mediaElement.Source = src;// (stream, "audio/mpeg");
+                byteArrayMediaElement.Source = src;
+                byteArrayMediaElement.AudioData = audioData;
+            }
+            catch (Exception)
+            {
+
+            }            
+
+            return byteArrayMediaElement;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -79,17 +164,19 @@ namespace DreamKeeper.ViewModels
 
         public async Task ToggleRecording()
         {
-            if (_isRecording)
+            if (IsRecording)
             {
-                await StopRecording();
-                _isRecording = false;
+                if (SelectedDream != null)
+                {
+                    await StopRecording(SelectedDream.Id);
+                    IsRecording = false;
+                }
             }
             else
             {
                 await StartRecording();
-                _isRecording = true;
+                IsRecording = true;
             }
-            OnPropertyChanged(nameof(_isRecording));
         }
 
         private async Task StartRecording()
@@ -98,58 +185,65 @@ namespace DreamKeeper.ViewModels
 
         }
 
-        public async Task StopRecording()
+        public async Task StopRecording(int dreamId)
         {
             IAudioSource audioSource = await this._audioRecorder.StopAsync();
             Stream audioStream = audioSource.GetAudioStream();
 
-            // Define the local file path
-            string filePath;
-#if ANDROID
-    var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    filePath = Path.Combine(documentsPath, "recording.m4a");
-#elif IOS
-    var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    filePath = Path.Combine(documentsPath, "recording.m4a");
-#elif WINDOWS
-    var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    filePath = Path.Combine(documentsPath, "recording.m4a");
-#else
-    var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-    filePath = Path.Combine(documentsPath, "recording.m4a");
-#endif
-            // Save the stream to the file
-            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            using (MemoryStream ms = new MemoryStream())
             {
-                await audioStream.CopyToAsync(fileStream);
+                await audioStream.CopyToAsync(ms);
+                byte[] audioData = ms.ToArray();
+
+                // Save the audio data to the database
+                SaveRecordingToDatabase(dreamId, audioData);
             }
 
             audioStream.Close();
         }
 
-        private async Task PlayRecording()
+        private async Task SaveRecordingToDatabase(int dreamId, byte[] audioData)
         {
-            var recording = await SQLiteDbService.GetRecordingAsync(_lastRecordingId);
-            if (recording != null)
+            using var connection = SQLiteDbService.CreateConnection();
+            connection.Open();
+
+            // Insert or update the dream recording
+            var updateQuery = @"
+            UPDATE Dreams
+            SET DreamRecording = @DreamRecording
+            WHERE Id = @Id";
+
+            var parameters = new { DreamRecording = audioData, Id = dreamId };
+
+            await connection.ExecuteAsync(updateQuery, parameters);
+        }
+
+        public void PlayRecording(Dream dream)
+        {
+            if (dream != null && dream.DreamRecording != null)
             {
-                PlayAudio(recording.AudioData);
+                // Convert byte array to stream
+                Stream audioStream = new MemoryStream(dream.DreamRecording);
+
+                // Set the source of the MediaElement to the audio stream
+                //AudioPlayer.SetSource(audioStream, "audio/mpeg");
+
+                // Play the audio
+                AudioPlayer.Play();
             }
         }
 
         public async void PlayAudio(byte[] audioData)
         {
-            // Create a temporary file to store the audio data
-            var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var tempFilePath = Path.Combine(documentsPath, "tempRecording.m4a");
+            // Convert byte array to stream
+            Stream audioStream = new MemoryStream(audioData);
 
-            // Write the audio data to the file
-            await File.WriteAllBytesAsync(tempFilePath, audioData);
-
-            // Create an audio player to play the temporary file
-            var audioPlayer = _audioManager.CreatePlayer(await FileSystem.OpenAppPackageFileAsync(tempFilePath));
+            // Set the source of the MediaElement to the audio stream
+            ByteArrayMediaSource source = new ByteArrayMediaSource(audioData);
+            AudioPlayer.Source = source; //new ByteArrayMediaSource(audioData);
 
             // Play the audio
-            audioPlayer.Play();
+            AudioPlayer.Play();
         }
 
     }
