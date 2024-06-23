@@ -20,14 +20,14 @@ namespace DreamKeeper.Services
         //    _dbContextOptions = dbContextOptions;
         //}
 
-        public ObservableCollection<Dream> GetDreams()
+        public async Task<ObservableCollection<Dream>> GetDreams()
         {
             using var connection = SQLiteDbService.CreateConnection();
             connection.Open();
 
             // get dreams
             var selectDreamsSql = "Select * FROM Dreams;";
-            var dreamsList = connection.Query<Dream>(selectDreamsSql);
+            var dreamsList = await connection.QueryAsync<Dream>(selectDreamsSql);
             var Dreams = new ObservableCollection<Dream>(dreamsList);
             return Dreams;            
         }
