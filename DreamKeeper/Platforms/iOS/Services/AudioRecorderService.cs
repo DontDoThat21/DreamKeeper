@@ -18,7 +18,7 @@ namespace DreamKeeper.Platforms.iOS.Services
             try
             {
                 var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var filename = Path.Combine(documents, $"recording_{Guid.NewGuid()}.m4a");
+                var filename = Path.Combine(documents, DreamKeeper.Services.AudioFileHelper.GetUniqueAudioFilename());
                 _url = NSUrl.FromFilename(filename);
 
                 var audioSettings = new AudioSettings

@@ -260,8 +260,10 @@ namespace DreamKeeper.ViewModels
                     else
                     {
                         // Fallback using direct source
-                        string extension = DeviceInfo.Platform == DevicePlatform.iOS ? "m4a" : "mp4";
-                        string tempFile = Path.Combine(FileSystem.CacheDirectory, $"temp_playback_{Guid.NewGuid()}.{extension}");
+                        string tempFile = Path.Combine(
+                            FileSystem.CacheDirectory, 
+                            Services.AudioFileHelper.GetUniqueAudioFilename());
+                        
                         File.WriteAllBytes(tempFile, dream.DreamRecording);
                         AudioPlayer.Source = MediaSource.FromFile(tempFile);
                     }

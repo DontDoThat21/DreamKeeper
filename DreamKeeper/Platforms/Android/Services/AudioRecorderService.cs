@@ -17,7 +17,7 @@ namespace DreamKeeper.Platforms.Android.Services
             try
             {
                 // Create a unique filename to avoid conflicts
-                string fileName = $"recording_{Guid.NewGuid()}.mp4";
+                string fileName = DreamKeeper.Services.AudioFileHelper.GetUniqueAudioFilename();
                 _filePath = Path.Combine(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, fileName);
                 
                 _recorder = new MediaRecorder();

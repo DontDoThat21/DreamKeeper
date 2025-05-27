@@ -30,8 +30,7 @@ namespace DreamKeeper.Data
             {
                 try
                 {
-                    string extension = DetermineAudioFileExtension();
-                    string fileName = $"recording_{Guid.NewGuid()}.{extension}";
+                    string fileName = DreamKeeper.Services.AudioFileHelper.GetUniqueAudioFilename();
                     var tempFilePath = Path.Combine(FileSystem.CacheDirectory, fileName);
                     
                     // Write byte array to a temporary file
@@ -44,24 +43,6 @@ namespace DreamKeeper.Data
                 {
                     System.Diagnostics.Debug.WriteLine($"Error updating media source: {ex.Message}");
                 }
-            }
-        }
-        
-        private string DetermineAudioFileExtension()
-        {
-            // Simple format detection based on operating system
-            // This could be expanded to detect format from the byte array header
-            if (DeviceInfo.Platform == DevicePlatform.iOS)
-            {
-                return "m4a";
-            }
-            else if (DeviceInfo.Platform == DevicePlatform.Android)
-            {
-                return "mp4";
-            }
-            else
-            {
-                return "mp3"; // Default fallback format
             }
         }
     }
