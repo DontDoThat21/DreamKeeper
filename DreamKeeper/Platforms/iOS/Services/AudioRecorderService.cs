@@ -1,48 +1,75 @@
 ﻿using AVFoundation;
 using Foundation;
-using DreamKeeper.Services;
+using DreamKeeper.Data.Data;
 using System.IO;
 using System.Threading.Tasks;
-using DreamKeeper.Data.Data;
+using System;
 
-[assembly: Dependency(typeof(YourNamespace.iOS.Services.AudioRecorderService))]
-namespace YourNamespace.iOS.Services
+[assembly: Dependency(typeof(DreamKeeper.Platforms.iOS.Services.AudioRecorderService))]
+namespace DreamKeeper.Platforms.iOS.Services
 {
     public class AudioRecorderService : IAudioRecorderService
     {
         private AVAudioRecorder _recorder;
         private NSUrl _url;
-        private NSDictionary _settings;
 
         public async Task StartRecordingAsync()
         {
-            var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var filename = Path.Combine(documents, "tempRecording.m4a");
-            _url = NSUrl.FromFilename(filename);
-
-            var audioSettings = new AudioSettings
+            try
             {
-                SampleRate = 44100.0,
-                Format = AudioToolbox.AudioFormatType.MPEG4AAC,
-                NumberChannels = 1,
-                AudioQuality = AVAudioQuality.High
-            };
+                var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var filename = Path.Combine(documents, $"recording_{Guid.NewGuid()}.m4a");
+                _url = NSUrl.FromFilename(filename);
 
-            NSError error;
-            _recorder = AVAudioRecorder.Create(_url, audioSettings, out error);
-            if (error != null)
-            {
-                // Handle error
-                throw new Exception(error.LocalizedDescription);
+                var audioSettings = new AudioSettings
+                {
+                    SampleRate = 44100.0,
+                    Format = AudioToolbox.AudioFormatType.MPEG4AAC,
+                    NumberChannels = 1,
+                    AudioQuality = AVAudioQuality.High,
+                    BitRate = 128000 // Higher quality
+                };
+
+                NSError error;
+                _recorder = AVAudioRecorder.Create(_url, audioSettings, out error);
+                if (error != null)
+                {
+                    // Handle error
+                    throw new Exception(error.LocalizedDescription);
+                }
+
+                _recorder.Record();
             }
-
-            _recorder.Record();
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error starting recording: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<byte[]> StopRecordingAsync()
         {
-            _recorder.Stop();
-            return File.ReadAllBytes(_url.Path);
+            try
+            {
+                _recorder.Stop();
+                
+                // Read the file into a byte array
+                if (File.Exists(_url.Path))
+                {
+                    var bytes = File.ReadAllBytes(_url.Path);
+                    
+                    // Clean up the temporary file
+                    try { File.Delete(_url.Path); } catch {}
+                    
+                    return bytes;
+                }
+                return new byte[0];
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error stopping recording: {ex.Message}");
+                return new byte[0];
+            }
         }
     }
 }
