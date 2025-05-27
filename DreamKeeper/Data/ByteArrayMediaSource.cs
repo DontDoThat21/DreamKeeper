@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using System.IO;
 
 namespace DreamKeeper.Data
 {
@@ -9,6 +10,15 @@ namespace DreamKeeper.Data
         public ByteArrayMediaSource(byte[] data)
         {
             Data = data;
+        }
+
+        public Stream GetStream()
+        {
+            if (Data != null && Data.Length > 0)
+            {
+                return new MemoryStream(Data);
+            }
+            return null;
         }
     }
 }
