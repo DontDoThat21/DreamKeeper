@@ -10,6 +10,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter"/>
+            <local:ByteArrayToVisibilityConverter x:Key="ByteArrayToVisibilityConverter"/>
         </ResourceDictionary>
 
         <DataTemplate x:Key="BaseMediaElementTemplate">
@@ -18,7 +19,8 @@
 
         <DataTemplate x:Key="ByteArrayMediaElementTemplate">
             <data:ByteArrayMediaElement Grid.Column="1" Grid.ColumnSpan="3"
-                                         AudioData="{Binding DreamRecording}" />
+                                         AudioData="{Binding DreamRecording}" 
+                                         ShouldShowPlaybackControls="True"/>
         </DataTemplate>
 
         <data:MediaElementTemplateSelector x:Key="MediaElementTemplateSelector"
@@ -62,9 +64,13 @@
                                             
                                             <Button BackgroundColor="Blue" FontSize="30" TextColor="Orange" Grid.Column="6" Grid.Row="1"
                                                     Clicked="Button_Clicked"
-                                                    Text="test"/>
+                                                    Text="▶️"
+                                                    IsEnabled="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"/>
 
-                                            <data:ByteArrayMediaElement x:Name="audioPlayer" Grid.Column="1" Grid.ColumnSpan="3" AudioData="{Binding DreamRecording}"/>
+                                            <data:ByteArrayMediaElement x:Name="audioPlayer" Grid.Column="1" Grid.ColumnSpan="3" 
+                                                                      AudioData="{Binding DreamRecording}"
+                                                                      ShouldShowPlaybackControls="True"
+                                                                      IsVisible="False"/>
 
                                             <Entry HeightRequest="90" Placeholder="Enter dream details here..." Text="{Binding DreamDescription}" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2"/>
 

@@ -108,23 +108,21 @@ namespace DreamKeeper.ViewModels
 
         private ByteArrayMediaElement CreateMediaElementFromByteArray(byte[] audioData)
         {
-            // Create MediaElement
-            //MediaElement mediaElement = new MediaElement();
+            // Create a ByteArrayMediaElement
             ByteArrayMediaElement byteArrayMediaElement = new ByteArrayMediaElement();
 
             try
             {
-                // Convert byte array to Stream
-                Stream stream = new MemoryStream(audioData);
-                
-                ByteArrayMediaSource src = new ByteArrayMediaSource(audioData);
-                //mediaElement.Source = src;// (stream, "audio/mpeg");
-                byteArrayMediaElement.Source = src;
-                byteArrayMediaElement.AudioData = audioData;
+                if (audioData != null && audioData.Length > 0)
+                {
+                    byteArrayMediaElement.AudioData = audioData;
+                    byteArrayMediaElement.ShouldAutoPlay = false;
+                    byteArrayMediaElement.ShouldShowPlaybackControls = true;
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                System.Diagnostics.Debug.WriteLine($"Error creating media element: {ex.Message}");
             }            
 
             return byteArrayMediaElement;
@@ -187,19 +185,43 @@ namespace DreamKeeper.ViewModels
 
         public async Task StopRecording(int dreamId)
         {
-            IAudioSource audioSource = await this._audioRecorder.StopAsync();
-            Stream audioStream = audioSource.GetAudioStream();
-
-            using (MemoryStream ms = new MemoryStream())
+            try
             {
-                await audioStream.CopyToAsync(ms);
-                byte[] audioData = ms.ToArray();
+                IAudioSource audioSource = await this._audioRecorder.StopAsync();
+                Stream audioStream = audioSource.GetAudioStream();
 
-                // Save the audio data to the database
-                SaveRecordingToDatabase(dreamId, audioData);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    await audioStream.CopyToAsync(ms);
+                    byte[] audioData = ms.ToArray();
+
+                    if (audioData.Length > 0)
+                    {
+                        // Save the audio data to the database
+                        await SaveRecordingToDatabase(dreamId, audioData);
+
+                        // Update the dream in the collection
+                        var dream = Dreams.FirstOrDefault(d => d.Id == dreamId);
+                        if (dream != null)
+                        {
+                            dream.DreamRecording = audioData;
+
+                            // Update the audio element 
+                            var existingIndex = Dreams.IndexOf(dream);
+                            if (existingIndex >= 0 && existingIndex < AudioElements.Count)
+                            {
+                                AudioElements[existingIndex].AudioData = audioData;
+                            }
+                        }
+                    }
+                }
+
+                audioStream.Close();
             }
-
-            audioStream.Close();
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error stopping recording: {ex.Message}");
+            }
         }
 
         private async Task SaveRecordingToDatabase(int dreamId, byte[] audioData)
@@ -220,30 +242,72 @@ namespace DreamKeeper.ViewModels
 
         public void PlayRecording(Dream dream)
         {
-            if (dream != null && dream.DreamRecording != null)
+            try
             {
-                // Convert byte array to stream
-                Stream audioStream = new MemoryStream(dream.DreamRecording);
+                if (dream != null && dream.DreamRecording != null && dream.DreamRecording.Length > 0)
+                {
+                    // Create a new ByteArrayMediaElement if AudioPlayer is null
+                    if (AudioPlayer == null)
+                    {
+                        AudioPlayer = new ByteArrayMediaElement();
+                    }
 
-                // Set the source of the MediaElement to the audio stream
-                //AudioPlayer.SetSource(audioStream, "audio/mpeg");
+                    // Set the AudioData property which will trigger UpdateMediaSource
+                    if (AudioPlayer is ByteArrayMediaElement byteArrayMediaElement)
+                    {
+                        byteArrayMediaElement.AudioData = dream.DreamRecording;
+                    }
+                    else
+                    {
+                        // Fallback using direct source
+                        string extension = DeviceInfo.Platform == DevicePlatform.iOS ? "m4a" : "mp4";
+                        string tempFile = Path.Combine(FileSystem.CacheDirectory, $"temp_playback_{Guid.NewGuid()}.{extension}");
+                        File.WriteAllBytes(tempFile, dream.DreamRecording);
+                        AudioPlayer.Source = MediaSource.FromFile(tempFile);
+                    }
 
-                // Play the audio
-                AudioPlayer.Play();
+                    // Play the audio
+                    AudioPlayer.Play();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error playing recording: {ex.Message}");
             }
         }
 
         public async void PlayAudio(byte[] audioData)
         {
-            // Convert byte array to stream
-            Stream audioStream = new MemoryStream(audioData);
+            try
+            {
+                if (audioData != null && audioData.Length > 0)
+                {
+                    // Create a new ByteArrayMediaElement if AudioPlayer is null
+                    if (AudioPlayer == null)
+                    {
+                        AudioPlayer = new ByteArrayMediaElement();
+                    }
 
-            // Set the source of the MediaElement to the audio stream
-            ByteArrayMediaSource source = new ByteArrayMediaSource(audioData);
-            AudioPlayer.Source = source; //new ByteArrayMediaSource(audioData);
+                    // Set the AudioData property directly if it's a ByteArrayMediaElement
+                    if (AudioPlayer is ByteArrayMediaElement byteArrayMediaElement)
+                    {
+                        byteArrayMediaElement.AudioData = audioData;
+                    }
+                    else
+                    {
+                        // Fallback to ByteArrayMediaSource
+                        ByteArrayMediaSource source = new ByteArrayMediaSource(audioData);
+                        AudioPlayer.Source = source;
+                    }
 
-            // Play the audio
-            AudioPlayer.Play();
+                    // Play the audio
+                    AudioPlayer.Play();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error playing audio: {ex.Message}");
+            }
         }
 
     }

@@ -56,20 +56,35 @@ namespace DreamKeeper
 
         private async void OnToggleRecordingClicked(object sender, EventArgs e)
         {
-            await _viewModel.ToggleRecording();
+            try
+            {
+                await _viewModel.ToggleRecording();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error toggling recording: {ex.Message}");
+                await DisplayAlert("Recording Error", "There was an error with the audio recording.", "OK");
+            }
         }
 
         private void Button_Clicked(object sender, EventArgs e)
         {
-            var bytestosave = _viewModel.AudioElements[2];
-            var bytestosaveReal = bytestosave.AudioData;
-            using (FileStream fs = new FileStream("C:\\Users\\Tylor\\Desktop\\file.mp3",
-                FileMode.Create, FileAccess.Write))
+            try
             {
-                // Write the bytes to the file
-                fs.Write(bytestosaveReal, 0, bytestosaveReal.Length);
+                Button button = sender as Button;
+                if (button != null)
+                {
+                    // Get the binding context of the button which should be a Dream object
+                    if (button.BindingContext is Dream dream && dream.DreamRecording != null)
+                    {
+                        _viewModel.PlayRecording(dream);
+                    }
+                }
             }
-            var yuwaduh = _viewModel.AudioElements;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error playing recording: {ex.Message}");
+            }
         }
     }
 
