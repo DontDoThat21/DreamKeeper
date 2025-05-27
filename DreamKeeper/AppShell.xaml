@@ -5,10 +5,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:DreamKeeper"
     Shell.FlyoutBehavior="Disabled"
-    Title="DreamKeeper">
+    Title="DreamKeeper"
+    BackgroundColor="{AppThemeBinding Light={StaticResource MoonGlow}, Dark={StaticResource NightSky}}"
+    ForegroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Secondary}}"
+    TitleColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}">
+
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="Auto,*" Margin="16,0">
+            <Label Text="DreamKeeper" 
+                   FontSize="20" 
+                   FontAttributes="Bold" 
+                   VerticalOptions="Center"
+                   TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+        </Grid>
+    </Shell.TitleView>
 
     <ShellContent
-        Title="Home"
+        Title="Dreams"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 
