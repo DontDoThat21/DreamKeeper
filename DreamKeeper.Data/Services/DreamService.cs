@@ -33,50 +33,59 @@ namespace DreamKeeper.Services
         }
 
         public Dream AddDream(Dream newDream)
-        {            
+        {
+            newDream.Id = 0;
+            return UpsertDream(newDream).Result;
+        }
+
+        public async Task DeleteDream(int dreamId)
+        {
+            using var connection = SQLiteDbService.CreateConnection();
+            connection.Open();
+
+            await connection.ExecuteAsync("DELETE FROM Dreams WHERE Id = @Id", new { Id = dreamId });
+        }
+
+        public void UpdateDream(Dream dream)
+        {
+            UpsertDream(dream).Wait();
+        }
+
+        public async Task<Dream> UpsertDream(Dream dream)
+        {
             try
             {
                 using var connection = SQLiteDbService.CreateConnection();
                 connection.Open();
 
-                // add dream
-                var insertDreamSql = @"
+                if (dream.Id <= 0)
+                {
+                    var insertSql = @"
                         INSERT INTO Dreams (DreamName, DreamDescription, DreamDate, DreamRecording)
                         VALUES (@DreamName, @DreamDescription, @DreamDate, @DreamRecording);
                         SELECT last_insert_rowid();";
-                // Insert dream into the database
-                int dreamId = connection.ExecuteScalar<int>(insertDreamSql, newDream);
+                    
+                    int dreamId = await connection.ExecuteScalarAsync<int>(insertSql, dream);
+                    dream.Id = dreamId;
+                }
+                else
+                {
+                    var updateSql = @"
+                        UPDATE Dreams 
+                        SET DreamName = @DreamName, DreamDescription = @DreamDescription, DreamDate = @DreamDate, DreamRecording = @DreamRecording 
+                        WHERE Id = @Id";
+                    
+                    await connection.ExecuteAsync(updateSql, dream);
+                }
 
-                newDream.Id = dreamId;
-
-                //GetDreams();
-                return newDream;
+                return dream;
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                newDream.Id = -1;
-                newDream.DreamDescription = Ex.Message;
-
+                dream.Id = -1;
+                dream.DreamDescription = ex.Message;
+                return dream;
             }
-
-            return newDream; 
-            
-        }
-
-        public void DeleteDream(int dreamId)
-        {
-            using var connection = SQLiteDbService.CreateConnection();
-            connection.Open();
-
-            connection.Execute("DELETE FROM Dreams WHERE Id = @Id", new { Id = dreamId });
-        }
-
-        public void UpdateDream(Dream dream)
-        {
-            using var connection = SQLiteDbService.CreateConnection();
-            connection.Open();
-
-            connection.Execute("UPDATE Dreams SET DreamName = @DreamName, DreamDescription = @DreamDescription, DreamDate = @DreamDate, DreamRecording = @DreamRecording WHERE Id = @Id", dream);
         }
 
     }

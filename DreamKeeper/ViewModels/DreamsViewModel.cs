@@ -147,7 +147,7 @@ namespace DreamKeeper.ViewModels
 
                 if (isConfirmed)
                 {
-                    _dreamService.DeleteDream(dream.Id);
+                    await _dreamService.DeleteDream(dream.Id);
                     Dreams.Remove(dream);
                 }
             }
