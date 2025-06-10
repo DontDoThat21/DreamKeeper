@@ -6,18 +6,22 @@
 
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
-    <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <!-- Dream Theme Color Palette -->
+    <Color x:Key="Primary">#6200EE</Color>
+    <Color x:Key="PrimaryDark">#3700B3</Color>
+    <Color x:Key="PrimaryDarkText">#121212</Color>
+    <Color x:Key="Secondary">#BB86FC</Color>
+    <Color x:Key="SecondaryDarkText">#6200EE</Color>
+    <Color x:Key="Tertiary">#03DAC6</Color>
+    <Color x:Key="TertiaryDark">#018786</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
-    <Color x:Key="Magenta">#D600AA</Color>
-    <Color x:Key="MidnightBlue">#190649</Color>
-    <Color x:Key="OffBlack">#1f1f1f</Color>
+    <Color x:Key="DreamPurple">#9C64FB</Color>
+    <Color x:Key="MidnightBlue">#121B50</Color>
+    <Color x:Key="NightSky">#121212</Color>
+    <Color x:Key="Starlight">#FFF9C4</Color>
+    <Color x:Key="MoonGlow">#F5F5F5</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
@@ -33,6 +37,10 @@
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+    <SolidColorBrush x:Key="DreamPurpleBrush" Color="{StaticResource DreamPurple}"/>
+    <SolidColorBrush x:Key="NightSkyBrush" Color="{StaticResource NightSky}"/>
+    <SolidColorBrush x:Key="StarlightBrush" Color="{StaticResource Starlight}"/>
+    <SolidColorBrush x:Key="MoonGlowBrush" Color="{StaticResource MoonGlow}"/>
 
     <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
     <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>

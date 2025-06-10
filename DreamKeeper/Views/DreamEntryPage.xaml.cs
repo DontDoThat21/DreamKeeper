@@ -17,10 +17,15 @@ public partial class DreamEntryPage : ContentPage
         {
             DreamName = DreamNameEntry.Text,
             DreamDescription = DreamDescriptionEntry.Text,
-            DreamDate = DateTime.Now // You may want to provide a way for users to select the date
+            DreamDate = DreamDatePicker.Date
         };
 
         // Raise event to notify parent view with the entered dream details
         DreamSaved?.Invoke(this, dream);
+    }
+    
+    private async void CancelButton_Clicked(object sender, EventArgs e)
+    {
+        await Navigation.PopModalAsync();
     }
 }
