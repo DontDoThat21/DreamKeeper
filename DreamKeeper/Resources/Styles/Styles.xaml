@@ -103,27 +103,6 @@
         <Setter Property="MinimumHeightRequest" Value="100"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
         <Setter Property="Margin" Value="0,8" />
-        <Setter Property="Padding" Value="14,10" />
-        <Setter Property="AutoSize" Value="TextChanges" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="VisualStateManager.VisualStateGroups">
-            <VisualStateGroupList>
-                <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal" />
-                    <VisualState x:Name="Disabled">
-                        <VisualState.Setters>
-                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="Focused">
-                        <VisualState.Setters>
-                            <Setter Property="BorderColor" Value="{StaticResource Primary}" />
-                            <Setter Property="BorderWidth" Value="1" />
-                        </VisualState.Setters>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateGroupList>
-        </Setter>
     </Style>
 
     <Style TargetType="Entry">
@@ -135,8 +114,6 @@
         <Setter Property="MinimumHeightRequest" Value="48"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
         <Setter Property="Margin" Value="0,8" />
-        <Setter Property="Padding" Value="14,0" />
-        <Setter Property="CornerRadius" Value="8" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
@@ -148,8 +125,6 @@
                     </VisualState>
                     <VisualState x:Name="Focused">
                         <VisualState.Setters>
-                            <Setter Property="BorderColor" Value="{StaticResource Primary}" />
-                            <Setter Property="BorderWidth" Value="1" />
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -423,6 +398,9 @@
                     </VisualState>
                 </VisualStateGroup>
             </VisualStateGroupList>
+        </Setter>
+    </Style>
+
     <Style x:Key="DreamCardStyle" TargetType="Frame">
         <Setter Property="HasShadow" Value="True" />
         <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource PrimaryDark}}" />
@@ -437,7 +415,7 @@
                     Opacity="0.4" />
         </Setter>
     </Style>
-    
+
     <Style x:Key="HeaderStyle" TargetType="Label">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="FontSize" Value="24" />
@@ -522,8 +500,6 @@
         <Setter Property="WidthRequest" Value="40" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="HorizontalOptions" Value="End" />
-    </Style>
-        </Setter>
     </Style>
 
     <Style TargetType="Page" ApplyToDerivedTypes="True">
