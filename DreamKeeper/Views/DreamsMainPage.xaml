@@ -11,6 +11,7 @@
         <ResourceDictionary>
             <local:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter"/>
             <local:ByteArrayToVisibilityConverter x:Key="ByteArrayToVisibilityConverter"/>
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
 
         <DataTemplate x:Key="BaseMediaElementTemplate">
@@ -60,8 +61,8 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Style="{StaticResource DreamCardStyle}">
-                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
-                                          ColumnDefinitions="*,Auto,Auto"
+                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                          ColumnDefinitions="*,Auto,Auto,Auto"
                                           ColumnSpacing="8"
                                           RowSpacing="8">
                                         
@@ -72,17 +73,17 @@
                                         
                                         <Label Text="{Binding DreamDate, StringFormat='{0:MMM d, yyyy}'}" 
                                                Style="{StaticResource DreamDateStyle}"
-                                               Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" />
+                                               Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" />
 
                                         <!-- Dream Description -->
                                         <Editor Text="{Binding DreamDescription}"
-                                                Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                                Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
                                                 AutoSize="TextChanges"
                                                 HeightRequest="100" />
                                         
                                         <!-- Audio Player (Hidden when no recording) -->
                                         <data:ByteArrayMediaElement x:Name="audioPlayer" 
-                                                                  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                                                                  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
                                                                   AudioData="{Binding DreamRecording}"
                                                                   ShouldShowPlaybackControls="True"
                                                                   IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
@@ -106,6 +107,17 @@
                                                 Text="⌫"
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteDreamCommand}"
                                                 CommandParameter="{Binding}" />
+                                        
+                                        <!-- Save Button (Only visible when there are unsaved changes) -->
+                                        <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4"
+                                                Text="💾 Save Changes"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                TextColor="White"
+                                                FontAttributes="Bold"
+                                                Margin="0,8,0,0"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SaveDreamCommand}"
+                                                CommandParameter="{Binding}"
+                                                IsVisible="{Binding HasUnsavedChanges, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     </Grid>
                                 </Frame>
                             </DataTemplate>

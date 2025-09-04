@@ -62,6 +62,7 @@ namespace DreamKeeper.ViewModels
 
         public ICommand ToggleRecordingCommand { get; set; }
         public ICommand PlayRecordingCommand { get; }
+        public ICommand SaveDreamCommand { get; }
 
         public ObservableCollection<Dream> Dreams { get; set; }
         public ObservableCollection<ByteArrayMediaElement> AudioElements { get; } = new ObservableCollection<ByteArrayMediaElement>();
@@ -71,6 +72,7 @@ namespace DreamKeeper.ViewModels
         {
             _dreamService = dreamService;
             DeleteDreamCommand = new Command<Dream>(async (dream) => await OnDeleteDream(dream));
+            SaveDreamCommand = new Command<Dream>(async (dream) => await OnSaveDream(dream));
             _audioManager = audioManager;
             _audioRecorder = audioManager.CreateRecorder();
             _elapsedTime = TimeSpan.Zero;
@@ -98,6 +100,8 @@ namespace DreamKeeper.ViewModels
             // Populate the Dreams collection
             foreach (var dream in loadedDreams)
             {
+                // Mark loaded dreams as saved (no unsaved changes)
+                dream.MarkAsSaved();
                 Dreams.Add(dream);
 
                 // Create MediaElement from dream recording byte array
@@ -204,7 +208,10 @@ namespace DreamKeeper.ViewModels
                         var dream = Dreams.FirstOrDefault(d => d.Id == dreamId);
                         if (dream != null)
                         {
+                            // Temporarily disable change tracking to avoid marking as unsaved
+                            var originalChangeState = dream.HasUnsavedChanges;
                             dream.DreamRecording = audioData;
+                            dream.HasUnsavedChanges = originalChangeState; // Restore original state since recording is automatically saved
 
                             // Update the audio element 
                             var existingIndex = Dreams.IndexOf(dream);
@@ -307,6 +314,25 @@ namespace DreamKeeper.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error playing audio: {ex.Message}");
+            }
+        }
+
+        private async Task OnSaveDream(Dream dream)
+        {
+            if (dream != null && dream.HasUnsavedChanges)
+            {
+                try
+                {
+                    await _dreamService.UpsertDream(dream);
+                    dream.MarkAsSaved();
+                    
+                    // Show a brief confirmation
+                    await App.Current.MainPage.DisplayAlert("Success", "Dream saved successfully!", "OK");
+                }
+                catch (Exception ex)
+                {
+                    await App.Current.MainPage.DisplayAlert("Error", $"Failed to save dream: {ex.Message}", "OK");
+                }
             }
         }
 

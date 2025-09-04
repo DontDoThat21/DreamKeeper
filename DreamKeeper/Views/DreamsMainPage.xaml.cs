@@ -42,7 +42,9 @@ namespace DreamKeeper
             else
             {
                 // No error(s).
-                _viewModel.Dreams.Add(dream); // Adding the dream to the ObservableCollection
+                // Mark the dream as saved since it was successfully added to the database
+                newDream.MarkAsSaved();
+                _viewModel.Dreams.Add(newDream); // Adding the dream to the ObservableCollection
             }
 
             // Close the sub-content view
