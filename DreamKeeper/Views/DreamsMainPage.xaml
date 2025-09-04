@@ -13,6 +13,7 @@
             <local:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
             <local:ByteArrayToVisibilityConverter x:Key="ByteArrayToVisibilityConverter"/>
             <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:BoolToInvertedVisibilityConverter x:Key="BoolToInvertedVisibilityConverter"/>
         </ResourceDictionary>
 
         <DataTemplate x:Key="BaseMediaElementTemplate">
@@ -72,9 +73,25 @@
                                                Style="{StaticResource DreamTitleStyle}"
                                                Grid.Row="0" Grid.Column="0" />
                                         
+                                        <!-- Clickable Date Label -->
                                         <Label Text="{Binding DreamDate, StringFormat='{0:MMM d, yyyy}'}" 
                                                Style="{StaticResource DreamDateStyle}"
-                                               Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" />
+                                               Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                                               IsVisible="{Binding IsEditingDate, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnDateLabelTapped" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+
+                                        <!-- DatePicker for editing -->
+                                        <DatePicker Date="{Binding DreamDate}"
+                                                    Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center"
+                                                    FontSize="14"
+                                                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray800}}"
+                                                    IsVisible="{Binding IsEditingDate, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    DateSelected="OnDatePickerDateSelected" />
 
                                         <!-- Dream Description -->
                                         <Editor Text="{Binding DreamDescription}"

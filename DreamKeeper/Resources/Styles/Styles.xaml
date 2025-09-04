@@ -443,6 +443,7 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="HorizontalOptions" Value="End" />
+        <Setter Property="TextDecorations" Value="Underline" />
     </Style>
     
     <Style x:Key="ActionButtonStyle" TargetType="Button">

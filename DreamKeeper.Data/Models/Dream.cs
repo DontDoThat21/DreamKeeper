@@ -100,6 +100,20 @@ namespace DreamKeeper.Models
             }
         }
 
+        private bool _isEditingDate;
+        public bool IsEditingDate
+        {
+            get => _isEditingDate;
+            set
+            {
+                if (_isEditingDate != value)
+                {
+                    _isEditingDate = value;
+                    OnPropertyChanged(nameof(IsEditingDate));
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
         {

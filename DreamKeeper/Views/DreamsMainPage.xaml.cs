@@ -92,6 +92,23 @@ namespace DreamKeeper
                 System.Diagnostics.Debug.WriteLine($"Error playing recording: {ex.Message}");
             }
         }
+
+        private async void OnDateLabelTapped(object sender, EventArgs e)
+        {
+            if (sender is Label label && label.BindingContext is Dream dream)
+            {
+                dream.IsEditingDate = true;
+            }
+        }
+
+        private async void OnDatePickerDateSelected(object sender, DateChangedEventArgs e)
+        {
+            if (sender is DatePicker datePicker && datePicker.BindingContext is Dream dream)
+            {
+                dream.DreamDate = e.NewDate;
+                dream.IsEditingDate = false;
+            }
+        }
     }
 
 }
