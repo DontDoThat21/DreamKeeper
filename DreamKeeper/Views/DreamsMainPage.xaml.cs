@@ -5,6 +5,7 @@ using DreamKeeper.ViewModels;
 using DreamKeeper.Views;
 using Plugin.Maui.Audio;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Views;
 
 namespace DreamKeeper
 {
@@ -83,7 +84,20 @@ namespace DreamKeeper
                     // Get the binding context of the button which should be a Dream object
                     if (button.BindingContext is Dream dream && dream.DreamRecording != null)
                     {
-                        _viewModel.PlayRecording(dream);
+                        // Find the parent Frame and then the ByteArrayMediaElement within it
+                        var parentFrame = FindParentElement<Frame>(button);
+                        if (parentFrame != null)
+                        {
+                            var mediaElement = FindChildElement<ByteArrayMediaElement>(parentFrame);
+                            if (mediaElement != null)
+                            {
+                                // Stop any currently playing audio first
+                                StopAllAudioPlayback();
+                                
+                                // Start playback immediately
+                                mediaElement.Play();
+                            }
+                        }
                     }
                 }
             }
@@ -91,6 +105,93 @@ namespace DreamKeeper
             {
                 System.Diagnostics.Debug.WriteLine($"Error playing recording: {ex.Message}");
             }
+        }
+
+        private void StopAllAudioPlayback()
+        {
+            // Find all ByteArrayMediaElement controls and stop them
+            var mediaElements = FindAllChildElements<ByteArrayMediaElement>(this);
+            foreach (var mediaElement in mediaElements)
+            {
+                try
+                {
+                    mediaElement.Stop();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error stopping audio: {ex.Message}");
+                }
+            }
+        }
+
+        private T FindParentElement<T>(Element element) where T : Element
+        {
+            var parent = element.Parent;
+            while (parent != null)
+            {
+                if (parent is T targetParent)
+                    return targetParent;
+                parent = parent.Parent;
+            }
+            return null;
+        }
+
+        private T FindChildElement<T>(Element parent) where T : Element
+        {
+            if (parent is T target)
+                return target;
+
+            if (parent is Layout layout)
+            {
+                foreach (var child in layout.Children)
+                {
+                    if (child is Element element)
+                    {
+                        var result = FindChildElement<T>(element);
+                        if (result != null)
+                            return result;
+                    }
+                }
+            }
+            else if (parent is ContentView contentView && contentView.Content != null)
+            {
+                return FindChildElement<T>(contentView.Content);
+            }
+            else if (parent is ScrollView scrollView && scrollView.Content != null)
+            {
+                return FindChildElement<T>(scrollView.Content);
+            }
+
+            return null;
+        }
+
+        private List<T> FindAllChildElements<T>(Element parent) where T : Element
+        {
+            var results = new List<T>();
+            
+            if (parent is T target)
+                results.Add(target);
+
+            if (parent is Layout layout)
+            {
+                foreach (var child in layout.Children)
+                {
+                    if (child is Element element)
+                    {
+                        results.AddRange(FindAllChildElements<T>(element));
+                    }
+                }
+            }
+            else if (parent is ContentView contentView && contentView.Content != null)
+            {
+                results.AddRange(FindAllChildElements<T>(contentView.Content));
+            }
+            else if (parent is ScrollView scrollView && scrollView.Content != null)
+            {
+                results.AddRange(FindAllChildElements<T>(scrollView.Content));
+            }
+
+            return results;
         }
 
         private async void OnDateLabelTapped(object sender, EventArgs e)
