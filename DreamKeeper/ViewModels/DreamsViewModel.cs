@@ -28,6 +28,7 @@ namespace DreamKeeper.ViewModels
         private string _recordingDuration;
         private int _lastRecordingId;
         private Dream _selectedDream;
+        private Dream _currentlyRecordingDream; // Track which dream is currently recording
 
         public bool IsRecording
         {
@@ -77,7 +78,7 @@ namespace DreamKeeper.ViewModels
             _audioRecorder = audioManager.CreateRecorder();
             _elapsedTime = TimeSpan.Zero;
 
-            ToggleRecordingCommand = new Command(async () => await ToggleRecording());
+            ToggleRecordingCommand = new Command<Dream>(async (dream) => await ToggleRecording(dream));
             PlayRecordingCommand = new Command<Dream>(PlayRecording);
             Dreams = new ObservableCollection<Dream>();
 
@@ -164,33 +165,64 @@ namespace DreamKeeper.ViewModels
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(1);
 
 
-        public async Task ToggleRecording()
+        public async Task ToggleRecording(Dream dream)
         {
-            if (IsRecording)
+            if (dream == null) return;
+
+            if (_currentlyRecordingDream != null && _currentlyRecordingDream != dream)
             {
-                if (SelectedDream != null)
-                {
-                    await StopRecording(SelectedDream.Id);
-                    IsRecording = false;
-                }
+                // Stop any other recording first
+                await StopRecording(_currentlyRecordingDream);
+            }
+
+            if (dream.IsRecording)
+            {
+                await StopRecording(dream);
             }
             else
             {
-                await StartRecording();
-                IsRecording = true;
+                await StartRecording(dream);
             }
         }
 
-        private async Task StartRecording()
+        public async Task ToggleRecording()
         {
-            await this._audioRecorder.StartAsync();
-
+            if (SelectedDream != null)
+            {
+                await ToggleRecording(SelectedDream);
+            }
         }
 
-        public async Task StopRecording(int dreamId)
+        private async Task StartRecording(Dream dream)
         {
             try
             {
+                // Stop any other recording first
+                if (_currentlyRecordingDream != null && _currentlyRecordingDream != dream)
+                {
+                    await StopRecording(_currentlyRecordingDream);
+                }
+
+                await this._audioRecorder.StartAsync();
+                dream.IsRecording = true;
+                _currentlyRecordingDream = dream;
+                IsRecording = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error starting recording: {ex.Message}");
+                dream.IsRecording = false;
+                _currentlyRecordingDream = null;
+                IsRecording = false;
+            }
+        }
+
+        private async Task StopRecording(Dream dream)
+        {
+            try
+            {
+                if (dream == null || !dream.IsRecording) return;
+
                 IAudioSource audioSource = await this._audioRecorder.StopAsync();
                 Stream audioStream = audioSource.GetAudioStream();
 
@@ -202,32 +234,50 @@ namespace DreamKeeper.ViewModels
                     if (audioData.Length > 0)
                     {
                         // Save the audio data to the database
-                        await SaveRecordingToDatabase(dreamId, audioData);
+                        await SaveRecordingToDatabase(dream.Id, audioData);
 
-                        // Update the dream in the collection
-                        var dream = Dreams.FirstOrDefault(d => d.Id == dreamId);
-                        if (dream != null)
+                        // Temporarily disable change tracking to avoid marking as unsaved
+                        var originalChangeState = dream.HasUnsavedChanges;
+                        dream.DreamRecording = audioData;
+                        dream.HasUnsavedChanges = originalChangeState; // Restore original state since recording is automatically saved
+
+                        // Update the audio element 
+                        var existingIndex = Dreams.IndexOf(dream);
+                        if (existingIndex >= 0 && existingIndex < AudioElements.Count)
                         {
-                            // Temporarily disable change tracking to avoid marking as unsaved
-                            var originalChangeState = dream.HasUnsavedChanges;
-                            dream.DreamRecording = audioData;
-                            dream.HasUnsavedChanges = originalChangeState; // Restore original state since recording is automatically saved
-
-                            // Update the audio element 
-                            var existingIndex = Dreams.IndexOf(dream);
-                            if (existingIndex >= 0 && existingIndex < AudioElements.Count)
-                            {
-                                AudioElements[existingIndex].AudioData = audioData;
-                            }
+                            AudioElements[existingIndex].AudioData = audioData;
                         }
                     }
                 }
 
                 audioStream.Close();
+                
+                // Update recording state
+                dream.IsRecording = false;
+                if (_currentlyRecordingDream == dream)
+                {
+                    _currentlyRecordingDream = null;
+                    IsRecording = false;
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error stopping recording: {ex.Message}");
+                dream.IsRecording = false;
+                if (_currentlyRecordingDream == dream)
+                {
+                    _currentlyRecordingDream = null;
+                    IsRecording = false;
+                }
+            }
+        }
+
+        public async Task StopRecording(int dreamId)
+        {
+            var dream = Dreams.FirstOrDefault(d => d.Id == dreamId);
+            if (dream != null)
+            {
+                await StopRecording(dream);
             }
         }
 
@@ -277,64 +327,64 @@ namespace DreamKeeper.ViewModels
                     AudioPlayer.Play();
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error playing recording: {ex.Message}");
-            }
-        }
+    catch (Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine($"Error playing recording: {ex.Message}");
+    }
+}
 
-        public async void PlayAudio(byte[] audioData)
+public async void PlayAudio(byte[] audioData)
+{
+    try
+    {
+        if (audioData != null && audioData.Length > 0)
         {
-            try
+            // Create a new ByteArrayMediaElement if AudioPlayer is null
+            if (AudioPlayer == null)
             {
-                if (audioData != null && audioData.Length > 0)
-                {
-                    // Create a new ByteArrayMediaElement if AudioPlayer is null
-                    if (AudioPlayer == null)
-                    {
-                        AudioPlayer = new ByteArrayMediaElement();
-                    }
-
-                    // Set the AudioData property directly if it's a ByteArrayMediaElement
-                    if (AudioPlayer is ByteArrayMediaElement byteArrayMediaElement)
-                    {
-                        byteArrayMediaElement.AudioData = audioData;
-                    }
-                    else
-                    {
-                        // Fallback to ByteArrayMediaSource
-                        ByteArrayMediaSource source = new ByteArrayMediaSource(audioData);
-                        AudioPlayer.Source = source;
-                    }
-
-                    // Play the audio
-                    AudioPlayer.Play();
-                }
+                AudioPlayer = new ByteArrayMediaElement();
             }
-            catch (Exception ex)
+
+            // Set the AudioData property directly if it's a ByteArrayMediaElement
+            if (AudioPlayer is ByteArrayMediaElement byteArrayMediaElement)
             {
-                System.Diagnostics.Debug.WriteLine($"Error playing audio: {ex.Message}");
+                byteArrayMediaElement.AudioData = audioData;
             }
+            else
+            {
+                // Fallback to ByteArrayMediaSource
+                ByteArrayMediaSource source = new ByteArrayMediaSource(audioData);
+                AudioPlayer.Source = source;
+            }
+
+            // Play the audio
+            AudioPlayer.Play();
         }
+    }
+    catch (Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine($"Error playing audio: {ex.Message}");
+    }
+}
 
-        private async Task OnSaveDream(Dream dream)
+private async Task OnSaveDream(Dream dream)
+{
+    if (dream != null && dream.HasUnsavedChanges)
+    {
+        try
         {
-            if (dream != null && dream.HasUnsavedChanges)
-            {
-                try
-                {
-                    await _dreamService.UpsertDream(dream);
-                    dream.MarkAsSaved();
-                    
-                    // Show a brief confirmation
-                    await App.Current.MainPage.DisplayAlert("Success", "Dream saved successfully!", "OK");
-                }
-                catch (Exception ex)
-                {
-                    await App.Current.MainPage.DisplayAlert("Error", $"Failed to save dream: {ex.Message}", "OK");
-                }
-            }
+            await _dreamService.UpsertDream(dream);
+            dream.MarkAsSaved();
+            
+            // Show a brief confirmation
+            await App.Current.MainPage.DisplayAlert("Success", "Dream saved successfully!", "OK");
         }
+        catch (Exception ex)
+        {
+            await App.Current.MainPage.DisplayAlert("Error", $"Failed to save dream: {ex.Message}", "OK");
+        }
+    }
+}
 
     }
 }

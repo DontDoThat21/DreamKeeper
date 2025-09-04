@@ -60,7 +60,11 @@ namespace DreamKeeper
         {
             try
             {
-                await _viewModel.ToggleRecording();
+                Button button = sender as Button;
+                if (button != null && button.BindingContext is Dream dream)
+                {
+                    await _viewModel.ToggleRecording(dream);
+                }
             }
             catch (Exception ex)
             {

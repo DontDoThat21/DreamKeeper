@@ -86,6 +86,20 @@ namespace DreamKeeper.Models
             }
         }
 
+        private bool _isRecording;
+        public bool IsRecording
+        {
+            get => _isRecording;
+            set
+            {
+                if (_isRecording != value)
+                {
+                    _isRecording = value;
+                    OnPropertyChanged(nameof(IsRecording));
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
         {

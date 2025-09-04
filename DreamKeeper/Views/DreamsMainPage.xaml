@@ -10,6 +10,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter"/>
+            <local:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
             <local:ByteArrayToVisibilityConverter x:Key="ByteArrayToVisibilityConverter"/>
             <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
@@ -94,6 +95,7 @@
                                                 Style="{StaticResource RecordButtonStyle}"
                                                 Clicked="OnToggleRecordingClicked"
                                                 Text="{Binding IsRecording, Converter={StaticResource BoolToRecordingTextConverter}}"
+                                                BackgroundColor="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"
                                                 HorizontalOptions="Start" />
                                         
                                         <Button Grid.Row="3" Grid.Column="1"
