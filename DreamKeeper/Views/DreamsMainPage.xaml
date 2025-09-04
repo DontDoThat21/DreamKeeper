@@ -31,7 +31,7 @@
                                            ByteArrayMediaElementTemplate="{StaticResource ByteArrayMediaElementTemplate}" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Header Section -->
         <Frame Grid.Row="0" Margin="16,16,16,0" Style="{StaticResource DreamCardStyle}">
             <StackLayout Spacing="8">
@@ -40,8 +40,64 @@
             </StackLayout>
         </Frame>
 
+        <!-- Search and Filter Section -->
+        <Frame Grid.Row="1" Margin="16,8,16,0" Style="{StaticResource DreamCardStyle}">
+            <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="0">
+                <!-- Search Bar -->
+                <SearchBar x:Name="searchBar"
+                          Grid.Column="0"
+                          Placeholder="Search dreams by title or description..."
+                          Text="{Binding SearchText}"
+                          SearchCommand="{Binding ClearFiltersCommand}"
+                          SearchCommandParameter="{x:Null}"
+                          VerticalOptions="Center" />
+                
+                <!-- Has Recording Filter -->
+                <CheckBox x:Name="hasRecordingCheckBox"
+                         Grid.Column="1"
+                         IsChecked="{Binding ShowOnlyWithRecordings}"
+                         Color="{StaticResource Primary}"
+                         VerticalOptions="Center" />
+                <Label Text="Has Recording"
+                       Grid.Column="2"
+                       VerticalOptions="Center"
+                       FontSize="14">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHasRecordingLabelTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+                
+                <!-- No Recording Filter -->
+                <CheckBox x:Name="noRecordingCheckBox"
+                         Grid.Column="3"
+                         IsChecked="{Binding ShowOnlyWithoutRecordings}"
+                         Color="{StaticResource Primary}"
+                         VerticalOptions="Center" />
+                <Label Text="No Recording"
+                       Grid.Column="4"
+                       VerticalOptions="Center"
+                       FontSize="14">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnNoRecordingLabelTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+                
+                <!-- Clear Filters Button -->
+                <Button Text="Clear Filters"
+                       Grid.Column="5"
+                       Command="{Binding ClearFiltersCommand}"
+                       BackgroundColor="{StaticResource Secondary}"
+                       TextColor="{StaticResource Black}"
+                       FontSize="12"
+                       CornerRadius="12"
+                       HeightRequest="32"
+                       Padding="12,4"
+                       VerticalOptions="Center" />
+            </Grid>
+        </Frame>
+
         <!-- Dreams List -->
-        <RefreshView Grid.Row="1">
+        <RefreshView Grid.Row="2">
             <ScrollView>
                 <StackLayout Padding="16,8" Spacing="0">
                     <CollectionView ItemsSource="{Binding Dreams}"
@@ -49,11 +105,11 @@
                                    SelectedItem="{Binding SelectedDream}">
                         <CollectionView.EmptyView>
                             <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
-                                <Label Text="No dreams recorded yet" 
+                                <Label Text="No dreams found" 
                                       HorizontalTextAlignment="Center"
                                       TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"
                                       FontSize="18" />
-                                <Label Text="Tap the + button to add your first dream"
+                                <Label Text="Try adjusting your search filters or add a new dream"
                                       HorizontalTextAlignment="Center"
                                       TextColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
                                       FontSize="14"
@@ -150,7 +206,7 @@
         </RefreshView>
 
         <!-- Floating Action Button -->
-        <Button Grid.Row="2"
+        <Button Grid.Row="3"
                 Style="{StaticResource AddButtonStyle}"
                 Text="+"
                 Clicked="DreamAddButton_ClickedAsync"/>

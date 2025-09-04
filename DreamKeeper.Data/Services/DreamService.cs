@@ -25,8 +25,8 @@ namespace DreamKeeper.Services
             using var connection = SQLiteDbService.CreateConnection();
             connection.Open();
 
-            // get dreams
-            var selectDreamsSql = "Select * FROM Dreams;";
+            // Get dreams sorted chronologically (oldest first)
+            var selectDreamsSql = "SELECT * FROM Dreams ORDER BY DreamDate ASC;";
             var dreamsList = await connection.QueryAsync<Dream>(selectDreamsSql);
             var Dreams = new ObservableCollection<Dream>(dreamsList);
             return Dreams;            

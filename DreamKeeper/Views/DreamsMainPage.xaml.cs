@@ -45,7 +45,7 @@ namespace DreamKeeper
                 // No error(s).
                 // Mark the dream as saved since it was successfully added to the database
                 newDream.MarkAsSaved();
-                _viewModel.Dreams.Add(newDream); // Adding the dream to the ObservableCollection
+                _viewModel.AddNewDream(newDream); // Use the new method to properly handle filtering and sorting
             }
 
             // Close the sub-content view
@@ -209,6 +209,16 @@ namespace DreamKeeper
                 dream.DreamDate = e.NewDate;
                 dream.IsEditingDate = false;
             }
+        }
+
+        private void OnHasRecordingLabelTapped(object sender, EventArgs e)
+        {
+            _viewModel.ShowOnlyWithRecordings = !_viewModel.ShowOnlyWithRecordings;
+        }
+
+        private void OnNoRecordingLabelTapped(object sender, EventArgs e)
+        {
+            _viewModel.ShowOnlyWithoutRecordings = !_viewModel.ShowOnlyWithoutRecordings;
         }
     }
 

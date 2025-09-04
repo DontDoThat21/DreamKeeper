@@ -29,6 +29,13 @@ namespace DreamKeeper.ViewModels
         private int _lastRecordingId;
         private Dream _selectedDream;
         private Dream _currentlyRecordingDream; // Track which dream is currently recording
+        
+        // Search and filter properties
+        private string _searchText = string.Empty;
+        private bool _showOnlyWithRecordings = false;
+        private bool _showOnlyWithoutRecordings = false;
+        private ObservableCollection<Dream> _allDreams; // Store all dreams
+        private ObservableCollection<Dream> _filteredDreams; // Display filtered dreams
 
         public bool IsRecording
         {
@@ -50,6 +57,56 @@ namespace DreamKeeper.ViewModels
             }
         }
 
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (_searchText != value)
+                {
+                    _searchText = value;
+                    OnPropertyChanged(nameof(SearchText));
+                    ApplyFilters();
+                }
+            }
+        }
+
+        public bool ShowOnlyWithRecordings
+        {
+            get => _showOnlyWithRecordings;
+            set
+            {
+                if (_showOnlyWithRecordings != value)
+                {
+                    _showOnlyWithRecordings = value;
+                    OnPropertyChanged(nameof(ShowOnlyWithRecordings));
+                    if (value)
+                    {
+                        ShowOnlyWithoutRecordings = false;
+                    }
+                    ApplyFilters();
+                }
+            }
+        }
+
+        public bool ShowOnlyWithoutRecordings
+        {
+            get => _showOnlyWithoutRecordings;
+            set
+            {
+                if (_showOnlyWithoutRecordings != value)
+                {
+                    _showOnlyWithoutRecordings = value;
+                    OnPropertyChanged(nameof(ShowOnlyWithoutRecordings));
+                    if (value)
+                    {
+                        ShowOnlyWithRecordings = false;
+                    }
+                    ApplyFilters();
+                }
+            }
+        }
+
         private MediaElement _audioPlayer;
         public MediaElement AudioPlayer
         {
@@ -64,8 +121,18 @@ namespace DreamKeeper.ViewModels
         public ICommand ToggleRecordingCommand { get; set; }
         public ICommand PlayRecordingCommand { get; }
         public ICommand SaveDreamCommand { get; }
+        public ICommand ClearFiltersCommand { get; }
 
-        public ObservableCollection<Dream> Dreams { get; set; }
+        public ObservableCollection<Dream> Dreams 
+        { 
+            get => _filteredDreams ?? new ObservableCollection<Dream>();
+            private set
+            {
+                _filteredDreams = value;
+                OnPropertyChanged(nameof(Dreams));
+            }
+        }
+        
         public ObservableCollection<ByteArrayMediaElement> AudioElements { get; } = new ObservableCollection<ByteArrayMediaElement>();
 
 
@@ -74,18 +141,19 @@ namespace DreamKeeper.ViewModels
             _dreamService = dreamService;
             DeleteDreamCommand = new Command<Dream>(async (dream) => await OnDeleteDream(dream));
             SaveDreamCommand = new Command<Dream>(async (dream) => await OnSaveDream(dream));
+            ClearFiltersCommand = new Command(ClearFilters);
             _audioManager = audioManager;
             _audioRecorder = audioManager.CreateRecorder();
             _elapsedTime = TimeSpan.Zero;
 
             ToggleRecordingCommand = new Command<Dream>(async (dream) => await ToggleRecording(dream));
             PlayRecordingCommand = new Command<Dream>(PlayRecording);
-            Dreams = new ObservableCollection<Dream>();
+            
+            _allDreams = new ObservableCollection<Dream>();
+            _filteredDreams = new ObservableCollection<Dream>();
 
             AudioElements = new ObservableCollection<ByteArrayMediaElement>();
             PerformInitialSetup();
-            // Load dreams and populate audio elements asynchronously
-
         }
 
         private async void PerformInitialSetup()
@@ -98,17 +166,81 @@ namespace DreamKeeper.ViewModels
             // Load dreams asynchronously
             var loadedDreams = await _dreamService.GetDreams();
 
-            // Populate the Dreams collection
-            foreach (var dream in loadedDreams)
+            // Sort chronologically (oldest first)
+            var sortedDreams = loadedDreams.OrderBy(d => d.DreamDate).ToList();
+
+            // Clear existing collections
+            _allDreams.Clear();
+            AudioElements.Clear();
+
+            // Populate the collections
+            foreach (var dream in sortedDreams)
             {
                 // Mark loaded dreams as saved (no unsaved changes)
                 dream.MarkAsSaved();
-                Dreams.Add(dream);
+                _allDreams.Add(dream);
 
                 // Create MediaElement from dream recording byte array
                 var audioElement = CreateMediaElementFromByteArray(dream.DreamRecording);
                 AudioElements.Add(audioElement);
             }
+
+            // Apply filters to populate the filtered dreams
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            var filtered = _allDreams.AsEnumerable();
+
+            // Apply search text filter
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var searchLower = SearchText.ToLower();
+                filtered = filtered.Where(d => 
+                    (d.DreamName?.ToLower().Contains(searchLower) ?? false) ||
+                    (d.DreamDescription?.ToLower().Contains(searchLower) ?? false));
+            }
+
+            // Apply recording filters
+            if (ShowOnlyWithRecordings)
+            {
+                filtered = filtered.Where(d => d.DreamRecording != null && d.DreamRecording.Length > 0);
+            }
+            else if (ShowOnlyWithoutRecordings)
+            {
+                filtered = filtered.Where(d => d.DreamRecording == null || d.DreamRecording.Length == 0);
+            }
+
+            // Sort chronologically (oldest first) - maintain order after filtering
+            var sortedFiltered = filtered.OrderBy(d => d.DreamDate).ToList();
+
+            // Update the filtered collection
+            Dreams.Clear();
+            foreach (var dream in sortedFiltered)
+            {
+                Dreams.Add(dream);
+            }
+        }
+
+        private void ClearFilters()
+        {
+            SearchText = string.Empty;
+            ShowOnlyWithRecordings = false;
+            ShowOnlyWithoutRecordings = false;
+        }
+
+        public void AddNewDream(Dream dream)
+        {
+            // Add to all dreams collection
+            _allDreams.Add(dream);
+            
+            // Create audio element
+            var audioElement = CreateMediaElementFromByteArray(dream.DreamRecording);
+            AudioElements.Add(audioElement);
+            
+            // Reapply filters to maintain proper order and filtering
+            ApplyFilters();
         }
 
         private ByteArrayMediaElement CreateMediaElementFromByteArray(byte[] audioData)
@@ -153,14 +285,25 @@ namespace DreamKeeper.ViewModels
                 if (isConfirmed)
                 {
                     await _dreamService.DeleteDream(dream.Id);
-                    Dreams.Remove(dream);
+                    
+                    // Remove from all collections
+                    _allDreams.Remove(dream);
+                    var dreamIndex = Dreams.IndexOf(dream);
+                    if (dreamIndex >= 0)
+                    {
+                        Dreams.Remove(dream);
+                        if (dreamIndex < AudioElements.Count)
+                        {
+                            AudioElements.RemoveAt(dreamIndex);
+                        }
+                    }
                 }
             }
         }
 
         public ICommand DeleteDreamCommand { get; }
 
-
+        // ...existing code for recording functionality...
         private TimeSpan _elapsedTime;
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(1);
 
@@ -247,6 +390,9 @@ namespace DreamKeeper.ViewModels
                         {
                             AudioElements[existingIndex].AudioData = audioData;
                         }
+                        
+                        // Reapply filters in case recording status affects filtering
+                        ApplyFilters();
                     }
                 }
 
