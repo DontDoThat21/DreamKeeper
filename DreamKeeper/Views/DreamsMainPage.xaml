@@ -11,6 +11,7 @@
         <ResourceDictionary>
             <local:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter"/>
             <local:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter"/>
+            <local:RecordingToPlayButtonColorConverter x:Key="RecordingToPlayButtonColorConverter"/>
             <local:ByteArrayToVisibilityConverter x:Key="ByteArrayToVisibilityConverter"/>
             <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <local:BoolToInvertedVisibilityConverter x:Key="BoolToInvertedVisibilityConverter"/>
@@ -171,11 +172,22 @@
                                                 BackgroundColor="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"
                                                 HorizontalOptions="Start" />
                                         
-                                        <Button Grid.Row="3" Grid.Column="1"
-                                                Style="{StaticResource PlayButtonStyle}"
-                                                Clicked="Button_Clicked"
-                                                Text="▶️"
-                                                IsEnabled="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}" />
+                                        <StackLayout Grid.Row="3" Grid.Column="1" HorizontalOptions="Center">
+                                            <Button Style="{StaticResource PlayButtonStyle}"
+                                                    Clicked="Button_Clicked"
+                                                    Text="▶️"
+                                                    BackgroundColor="{Binding DreamRecording, Converter={StaticResource RecordingToPlayButtonColorConverter}}"
+                                                    IsEnabled="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}">
+                                                <Button.GestureRecognizers>
+                                                    <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnPlayButtonDoubleClicked" />
+                                                </Button.GestureRecognizers>
+                                            </Button>
+                                            <Label Text="Double-tap to delete" 
+                                                   FontSize="8" 
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
+                                                   HorizontalTextAlignment="Center"
+                                                   IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}" />
+                                        </StackLayout>
                                         
                                         <Button Grid.Row="3" Grid.Column="2"
                                                 Style="{StaticResource DeleteButtonStyle}"

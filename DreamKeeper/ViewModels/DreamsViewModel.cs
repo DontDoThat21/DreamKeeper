@@ -122,6 +122,7 @@ namespace DreamKeeper.ViewModels
         public ICommand PlayRecordingCommand { get; }
         public ICommand SaveDreamCommand { get; }
         public ICommand ClearFiltersCommand { get; }
+        public ICommand DeleteRecordingCommand { get; }
 
         public ObservableCollection<Dream> Dreams 
         { 
@@ -142,6 +143,7 @@ namespace DreamKeeper.ViewModels
             DeleteDreamCommand = new Command<Dream>(async (dream) => await OnDeleteDream(dream));
             SaveDreamCommand = new Command<Dream>(async (dream) => await OnSaveDream(dream));
             ClearFiltersCommand = new Command(ClearFilters);
+            DeleteRecordingCommand = new Command<Dream>(async (dream) => await OnDeleteRecording(dream));
             _audioManager = audioManager;
             _audioRecorder = audioManager.CreateRecorder();
             _elapsedTime = TimeSpan.Zero;
@@ -532,5 +534,61 @@ private async Task OnSaveDream(Dream dream)
     }
 }
 
+        private async Task OnDeleteRecording(Dream dream)
+        {
+            if (dream != null && dream.DreamRecording != null && dream.DreamRecording.Length > 0)
+            {
+                bool isConfirmed = await App.Current.MainPage.DisplayAlert(
+                    "Delete Recording",
+                    "Are you sure you want to delete this recording?",
+                    "Yes",
+                    "No");
+
+                if (isConfirmed)
+                {
+                    try
+                    {
+                        // Remove recording from database
+                        await DeleteRecordingFromDatabase(dream.Id);
+
+                        // Update the dream object
+                        var originalChangeState = dream.HasUnsavedChanges;
+                        dream.DreamRecording = null;
+                        dream.HasUnsavedChanges = originalChangeState; // Recording deletion is automatically saved
+
+                        // Update the audio element
+                        var existingIndex = Dreams.IndexOf(dream);
+                        if (existingIndex >= 0 && existingIndex < AudioElements.Count)
+                        {
+                            AudioElements[existingIndex].AudioData = null;
+                        }
+
+                        // Reapply filters in case recording status affects filtering
+                        ApplyFilters();
+
+                        await App.Current.MainPage.DisplayAlert("Success", "Recording deleted successfully!", "OK");
+                    }
+                    catch (Exception ex)
+                    {
+                        await App.Current.MainPage.DisplayAlert("Error", $"Failed to delete recording: {ex.Message}", "OK");
+                    }
+                }
+            }
+        }
+
+        private async Task DeleteRecordingFromDatabase(int dreamId)
+        {
+            using var connection = SQLiteDbService.CreateConnection();
+            connection.Open();
+
+            var updateQuery = @"
+            UPDATE Dreams
+            SET DreamRecording = NULL
+            WHERE Id = @Id";
+
+            var parameters = new { Id = dreamId };
+
+            await connection.ExecuteAsync(updateQuery, parameters);
+        }
     }
 }
