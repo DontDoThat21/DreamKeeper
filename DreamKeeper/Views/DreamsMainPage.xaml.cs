@@ -107,6 +107,39 @@ namespace DreamKeeper
             }
         }
 
+        private async void OnPlayButtonLongPress(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is TapGestureRecognizer gestureRecognizer && 
+                    gestureRecognizer.Parent is Button button && 
+                    button.BindingContext is Dream dream &&
+                    dream.DreamRecording != null && 
+                    dream.DreamRecording.Length > 0)
+                {
+                    // Show action sheet for deleting recording
+                    string result = await DisplayActionSheet(
+                        "Recording Options", 
+                        "Cancel", 
+                        null, 
+                        "Delete Recording");
+
+                    if (result == "Delete Recording")
+                    {
+                        // Execute the delete recording command
+                        if (_viewModel.DeleteRecordingCommand.CanExecute(dream))
+                        {
+                            _viewModel.DeleteRecordingCommand.Execute(dream);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error handling long press: {ex.Message}");
+            }
+        }
+
         private void StopAllAudioPlayback()
         {
             // Find all ByteArrayMediaElement controls and stop them
@@ -219,36 +252,6 @@ namespace DreamKeeper
         private void OnNoRecordingLabelTapped(object sender, EventArgs e)
         {
             _viewModel.ShowOnlyWithoutRecordings = !_viewModel.ShowOnlyWithoutRecordings;
-        }
-
-        private async void OnPlayButtonDoubleClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                if (sender is TapGestureRecognizer tapGesture && 
-                    tapGesture.Parent is Button button && 
-                    button.BindingContext is Dream dream &&
-                    dream.DreamRecording != null && 
-                    dream.DreamRecording.Length > 0)
-                {
-                    // Show context menu for deleting recording
-                    string result = await DisplayActionSheet(
-                        "Recording Options", 
-                        "Cancel", 
-                        null, 
-                        "Delete Recording");
-
-                    if (result == "Delete Recording")
-                    {
-                        // Execute the delete recording command
-                        _viewModel.DeleteRecordingCommand.Execute(dream);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error handling play button context menu: {ex.Message}");
-            }
         }
     }
 

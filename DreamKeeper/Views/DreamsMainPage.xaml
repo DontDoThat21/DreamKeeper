@@ -172,22 +172,17 @@
                                                 BackgroundColor="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"
                                                 HorizontalOptions="Start" />
                                         
-                                        <StackLayout Grid.Row="3" Grid.Column="1" HorizontalOptions="Center">
-                                            <Button Style="{StaticResource PlayButtonStyle}"
-                                                    Clicked="Button_Clicked"
-                                                    Text="▶️"
-                                                    BackgroundColor="{Binding DreamRecording, Converter={StaticResource RecordingToPlayButtonColorConverter}}"
-                                                    IsEnabled="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}">
-                                                <Button.GestureRecognizers>
-                                                    <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnPlayButtonDoubleClicked" />
-                                                </Button.GestureRecognizers>
-                                            </Button>
-                                            <Label Text="Double-tap to delete" 
-                                                   FontSize="8" 
-                                                   TextColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
-                                                   HorizontalTextAlignment="Center"
-                                                   IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}" />
-                                        </StackLayout>
+                                        <Button Grid.Row="3" Grid.Column="1"
+                                                Style="{StaticResource PlayButtonStyle}"
+                                                Clicked="Button_Clicked"
+                                                Text="▶️"
+                                                BackgroundColor="{Binding DreamRecording, Converter={StaticResource RecordingToPlayButtonColorConverter}}"
+                                                IsEnabled="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
+                                                x:Name="playButton">
+                                            <Button.GestureRecognizers>
+                                                <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnPlayButtonLongPress" />
+                                            </Button.GestureRecognizers>
+                                        </Button>
                                         
                                         <Button Grid.Row="3" Grid.Column="2"
                                                 Style="{StaticResource DeleteButtonStyle}"
