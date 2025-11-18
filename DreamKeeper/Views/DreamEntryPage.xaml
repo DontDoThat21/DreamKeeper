@@ -73,7 +73,8 @@
                     BackgroundColor="{StaticResource Primary}"
                     Margin="0,24,0,0"
                     FontAttributes="Bold"
-                    HeightRequest="50"/>
+                    HeightRequest="50"
+                    WidthRequest="150"/>
         </Grid>
     </ScrollView>
 </ContentPage>
