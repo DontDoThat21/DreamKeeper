@@ -101,10 +101,15 @@
                                         MinimumHeightRequest="80" />
 
                                 <!-- Audio Player (only visible when recording exists) -->
-                                <data:ByteArrayMediaElement AudioData="{Binding DreamRecording}"
-                                                            IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
-                                                            HeightRequest="50"
-                                                            ShouldAutoPlay="False" />
+                                <Grid IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
+                                      HeightRequest="80"
+                                      Margin="0,4">
+                                    <data:ByteArrayMediaElement AudioData="{Binding DreamRecording}"
+                                                                HeightRequest="80"
+                                                                ShouldAutoPlay="False"
+                                                                VerticalOptions="Fill"
+                                                                HorizontalOptions="Fill" />
+                                </Grid>
 
                                 <!-- Action buttons -->
                                 <HorizontalStackLayout Spacing="8">
@@ -125,6 +130,14 @@
                                                                   Tapped="OnPlayButtonDoubleTapped" />
                                         </Button.GestureRecognizers>
                                     </Button>
+
+                                    <!-- Delete Recording Button (only visible when recording exists) -->
+                                    <Button Text="&#128465;"
+                                            IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:DreamsViewModel}}, Path=DeleteRecordingCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource DeleteButtonStyle}"
+                                            ToolTipProperties.Text="Delete Recording" />
 
                                     <!-- Delete Dream Button -->
                                     <Button Text="&#9003;"

@@ -23,6 +23,7 @@ namespace DreamKeeper.ViewModels
         private string _searchText = string.Empty;
         private bool _showOnlyWithRecordings;
         private bool _showOnlyWithoutRecordings;
+        private bool _isRefreshing;
 
         public DreamsViewModel(DreamService dreamService, IAudioManager audioManager)
         {
@@ -35,6 +36,7 @@ namespace DreamKeeper.ViewModels
             DeleteDreamCommand = new Command<Dream>(async (dream) => await DeleteDream(dream));
             DeleteRecordingCommand = new Command<Dream>(async (dream) => await DeleteRecording(dream));
             ClearFiltersCommand = new Command(ClearFilters);
+            RefreshCommand = new Command(() => { LoadDreams(); IsRefreshing = false; });
 
             LoadDreams();
         }
@@ -120,6 +122,20 @@ namespace DreamKeeper.ViewModels
         public ICommand DeleteDreamCommand { get; }
         public ICommand DeleteRecordingCommand { get; }
         public ICommand ClearFiltersCommand { get; }
+        public ICommand RefreshCommand { get; }
+
+        public bool IsRefreshing
+        {
+            get => _isRefreshing;
+            set
+            {
+                if (_isRefreshing != value)
+                {
+                    _isRefreshing = value;
+                    OnPropertyChanged(nameof(IsRefreshing));
+                }
+            }
+        }
 
         public void LoadDreams()
         {
