@@ -14,7 +14,7 @@ namespace DreamKeeper
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-                .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
+                .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true)
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
