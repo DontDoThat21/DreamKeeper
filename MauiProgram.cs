@@ -14,7 +14,7 @@ namespace DreamKeeper
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-                .UseMauiCommunityToolkitMediaElement()
+                .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -43,6 +43,10 @@ namespace DreamKeeper
 
             // Database initialization
 #if DEBUG
+            // Set the platform-specific database path before initializing
+            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "dream_database.db3");
+            ConfigurationLoader.SetDatabasePath(dbPath);
+
             SQLiteDbService.InitializeDatabase();
 #endif
 

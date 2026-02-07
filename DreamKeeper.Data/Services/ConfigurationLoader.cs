@@ -9,6 +9,16 @@ namespace DreamKeeper.Data.Services
     public static class ConfigurationLoader
     {
         private static IConfiguration? _configuration;
+        private static string? _databasePath;
+
+        /// <summary>
+        /// Sets the database path to use for the connection string.
+        /// This should be called early in application startup before any database operations.
+        /// </summary>
+        public static void SetDatabasePath(string databasePath)
+        {
+            _databasePath = databasePath;
+        }
 
         public static string GetConnectionString()
         {
@@ -50,8 +60,16 @@ namespace DreamKeeper.Data.Services
                     .Build();
             }
 
-            return _configuration.GetConnectionString("SqliteConnection")
-                ?? "Data Source=dream_database.db3";
+            var connectionString = _configuration.GetConnectionString("SqliteConnection");
+
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                // Use the configured database path, or fall back to a default
+                var dbPath = _databasePath ?? "dream_database.db3";
+                connectionString = $"Data Source={dbPath}";
+            }
+
+            return connectionString;
         }
     }
 }
