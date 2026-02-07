@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DreamKeeper.csproj" />
+  <Project Path="DreamKeeper.Data\DreamKeeper.Data.csproj" />
+</Solution>

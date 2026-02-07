@@ -1,30 +1,57 @@
-﻿using System.Reflection;
-using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
-namespace Muffle.Data.Services
+namespace DreamKeeper.Data.Services
 {
+    /// <summary>
+    /// Reads appsettings.json to load the SQLite connection string.
+    /// Uses assembly location path traversal to locate the configuration file.
+    /// </summary>
     public static class ConfigurationLoader
     {
-        public static string GetConnectionString(string name)
+        private static IConfiguration? _configuration;
+
+        public static string GetConnectionString()
         {
-            Assembly assembly = Assembly.GetEntryAssembly();
-            string assemblyLocation = Path.GetDirectoryName(assembly.Location);
-            string projectDirectory = Path.GetDirectoryName(Path.GetDirectoryName(assemblyLocation));
-            string csProjDir = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(projectDirectory)));
-
-            var configPath = Path.Combine(csProjDir, "appsettings.json");
-
-            var jsonString = File.ReadAllText(configPath);
-            var jsonDoc = JsonDocument.Parse(jsonString);
-            var root = jsonDoc.RootElement;
-
-            if (root.TryGetProperty("ConnectionStrings", out var connectionStrings) &&
-                connectionStrings.TryGetProperty(name, out var connectionString))
+            if (_configuration == null)
             {
-                return connectionString.GetString();
+                var assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
+
+                // Try multiple paths to find appsettings.json
+                string? configPath = null;
+
+                if (!string.IsNullOrEmpty(assemblyDirectory))
+                {
+                    // Walk up to find the config file
+                    var dir = assemblyDirectory;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        var candidate = Path.Combine(dir, "appsettings.json");
+                        if (File.Exists(candidate))
+                        {
+                            configPath = dir;
+                            break;
+                        }
+                        var parent = Directory.GetParent(dir);
+                        if (parent == null) break;
+                        dir = parent.FullName;
+                    }
+                }
+
+                // Fallback: use AppContext.BaseDirectory
+                if (configPath == null)
+                {
+                    configPath = AppContext.BaseDirectory;
+                }
+
+                _configuration = new ConfigurationBuilder()
+                    .SetBasePath(configPath)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                    .Build();
             }
 
-            throw new KeyNotFoundException($"Connection string '{name}' not found.");
+            return _configuration.GetConnectionString("SqliteConnection")
+                ?? "Data Source=dream_database.db3";
         }
     }
 }

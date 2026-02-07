@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DreamKeeper.Views.DreamEntryPage"
+             Title="New Dream"
+             BackgroundColor="{AppThemeBinding Light={StaticResource MoonGlow}, Dark={StaticResource NightSky}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Cancel" Clicked="OnCancelClicked" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView Padding="20">
+        <StackLayout Spacing="15">
+            <Label Text="Record a New Dream"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource Primary}"
+                   HorizontalTextAlignment="Center" />
+
+            <Frame Style="{StaticResource DreamCardStyle}" Padding="15">
+                <StackLayout Spacing="12">
+                    <Label Text="Dream Title" FontSize="16" FontAttributes="Bold" />
+                    <Entry x:Name="TitleEntry"
+                           Placeholder="Enter dream title..."
+                           FontSize="16" />
+
+                    <Label Text="Dream Description" FontSize="16" FontAttributes="Bold" />
+                    <Editor x:Name="DescriptionEditor"
+                            Placeholder="Describe your dream in detail..."
+                            HeightRequest="150"
+                            AutoSize="TextChanges"
+                            FontSize="14" />
+
+                    <Label Text="Dream Date" FontSize="16" FontAttributes="Bold" />
+                    <DatePicker x:Name="DreamDatePicker"
+                                Date="{x:Static sys:DateTime.Now}"
+                                xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                                FontSize="14" />
+
+                    <Button Text="Save Dream"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Clicked="OnSaveDreamClicked"
+                            Margin="0,10,0,0" />
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:converters="clr-namespace:DreamKeeper.Services"
+             xmlns:data="clr-namespace:DreamKeeper.Data"
+             xmlns:viewmodels="clr-namespace:DreamKeeper.ViewModels"
+             x:Class="DreamKeeper.Views.DreamsMainPage"
+             Title="Dream Journal"
+             BackgroundColor="{AppThemeBinding Light={StaticResource MoonGlow}, Dark={StaticResource NightSky}}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:BoolToRecordingTextConverter x:Key="BoolToRecordingTextConverter" />
+            <converters:BoolToRecordingColorConverter x:Key="BoolToRecordingColorConverter" />
+            <converters:RecordingToPlayButtonColorConverter x:Key="RecordingToPlayButtonColorConverter" />
+            <converters:ByteArrayToVisibilityConverter x:Key="ByteArrayToVisibilityConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:BoolToInvertedVisibilityConverter x:Key="BoolToInvertedVisibilityConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="10">
+
+        <!-- Row 0: Header -->
+        <Frame Grid.Row="0"
+               Style="{StaticResource DreamCardStyle}"
+               Padding="20"
+               Margin="0,5">
+            <StackLayout>
+                <Label Text="Dream Journal"
+                       Style="{StaticResource HeaderStyle}" />
+                <Label Text="Capture your dreams and insights"
+                       Style="{StaticResource SubHeaderStyle}" />
+            </StackLayout>
+        </Frame>
+
+        <!-- Row 1: Search bar + filter controls -->
+        <StackLayout Grid.Row="1" Margin="0,5">
+            <SearchBar Placeholder="Search dreams..."
+                       Text="{Binding SearchText}"
+                       SearchCommand="{x:Null}" />
+            <HorizontalStackLayout Spacing="10" Padding="5,0">
+                <CheckBox IsChecked="{Binding ShowOnlyWithRecordings}" />
+                <Label Text="Has Recording" VerticalOptions="Center" />
+                <CheckBox IsChecked="{Binding ShowOnlyWithoutRecordings}" />
+                <Label Text="No Recording" VerticalOptions="Center" />
+                <Button Text="Clear Filters"
+                        Command="{Binding ClearFiltersCommand}"
+                        Style="{StaticResource ActionButtonStyle}"
+                        FontSize="12"
+                        Padding="8,4"
+                        HeightRequest="36" />
+            </HorizontalStackLayout>
+        </StackLayout>
+
+        <!-- Row 2: Scrollable dream card list -->
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Dreams}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+                        <Label Text="No dreams found"
+                               FontSize="18"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{StaticResource Gray500}" />
+                        <Label Text="Tap the + button to add your first dream"
+                               FontSize="14"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{StaticResource Gray400}" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Style="{StaticResource DreamCardStyle}"
+                               Margin="5,5"
+                               Padding="15">
+                            <StackLayout Spacing="8">
+                                <!-- Title -->
+                                <Label Text="{Binding DreamName}"
+                                       Style="{StaticResource DreamTitleStyle}" />
+
+                                <!-- Date: tappable label / inline DatePicker toggle -->
+                                <Label Text="{Binding DreamDate, StringFormat='{0:MMMM dd, yyyy}'}"
+                                       Style="{StaticResource DreamDateStyle}"
+                                       IsVisible="{Binding IsEditingDate, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnDateLabelTapped" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <DatePicker Date="{Binding DreamDate}"
+                                            IsVisible="{Binding IsEditingDate, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            DateSelected="OnDateSelected" />
+
+                                <!-- Description -->
+                                <Editor Text="{Binding DreamDescription}"
+                                        AutoSize="TextChanges"
+                                        Placeholder="Enter dream details here..."
+                                        MinimumHeightRequest="80" />
+
+                                <!-- Audio Player (only visible when recording exists) -->
+                                <data:ByteArrayMediaElement AudioData="{Binding DreamRecording}"
+                                                            IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
+                                                            HeightRequest="50"
+                                                            ShouldAutoPlay="False" />
+
+                                <!-- Action buttons -->
+                                <HorizontalStackLayout Spacing="8">
+                                    <!-- Record Button -->
+                                    <Button Text="{Binding IsRecording, Converter={StaticResource BoolToRecordingTextConverter}}"
+                                            BackgroundColor="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:DreamsViewModel}}, Path=ToggleRecordingCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource RecordButtonStyle}" />
+
+                                    <!-- Play Button -->
+                                    <Button Text="&#9654;"
+                                            TextColor="{Binding DreamRecording, Converter={StaticResource RecordingToPlayButtonColorConverter}}"
+                                            Clicked="OnPlayButtonClicked"
+                                            Style="{StaticResource PlayButtonStyle}">
+                                        <Button.GestureRecognizers>
+                                            <TapGestureRecognizer NumberOfTapsRequired="2"
+                                                                  Tapped="OnPlayButtonDoubleTapped" />
+                                        </Button.GestureRecognizers>
+                                    </Button>
+
+                                    <!-- Delete Dream Button -->
+                                    <Button Text="&#9003;"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:DreamsViewModel}}, Path=DeleteDreamCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource DeleteButtonStyle}" />
+
+                                    <!-- Save Button (only when HasUnsavedChanges) -->
+                                    <Button Text="Save"
+                                            IsVisible="{Binding HasUnsavedChanges, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:DreamsViewModel}}, Path=SaveDreamCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource ActionButtonStyle}" />
+                                </HorizontalStackLayout>
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Row 3: Floating "+" action button -->
+        <Button Grid.Row="3"
+                Text="+"
+                Style="{StaticResource AddButtonStyle}"
+                Clicked="OnAddDreamClicked"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,15,15" />
+    </Grid>
+</ContentPage>

@@ -1,63 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DreamKeeper.Models
+namespace DreamKeeper.Data.Models
 {
     public class Dream : INotifyPropertyChanged
     {
-        public int Id { get; set; }
-        
+        private int _id;
         private string? _dreamName = "Enter dream title here...";
-        public string? DreamName 
-        { 
+        private string? _dreamDescription = "Enter dream details here...";
+        private DateTime _dreamDate = DateTime.Now;
+        private byte[]? _dreamRecording;
+        private bool _hasUnsavedChanges;
+        private bool _isRecording;
+        private bool _isEditingDate;
+
+        public int Id
+        {
+            get => _id;
+            set
+            {
+                if (_id != value)
+                {
+                    _id = value;
+                    OnPropertyChanged(nameof(Id));
+                }
+            }
+        }
+
+        public string? DreamName
+        {
             get => _dreamName;
             set
             {
                 if (_dreamName != value)
                 {
                     _dreamName = value;
-                    OnPropertyChanged(nameof(DreamName));
                     HasUnsavedChanges = true;
+                    OnPropertyChanged(nameof(DreamName));
                 }
             }
         }
-        
-        private string? _dreamDescription = "Enter dream details here...";
-        public string? DreamDescription 
-        { 
+
+        public string? DreamDescription
+        {
             get => _dreamDescription;
             set
             {
                 if (_dreamDescription != value)
                 {
                     _dreamDescription = value;
-                    OnPropertyChanged(nameof(DreamDescription));
                     HasUnsavedChanges = true;
+                    OnPropertyChanged(nameof(DreamDescription));
                 }
             }
         }
-        
-        private DateTime _dreamDate = DateTime.Now;
-        public DateTime DreamDate 
-        { 
+
+        public DateTime DreamDate
+        {
             get => _dreamDate;
             set
             {
                 if (_dreamDate != value)
                 {
                     _dreamDate = value;
-                    OnPropertyChanged(nameof(DreamDate));
                     HasUnsavedChanges = true;
+                    OnPropertyChanged(nameof(DreamDate));
                 }
             }
         }
-        
-        private byte[]? _dreamRecording;
+
         public byte[]? DreamRecording
         {
             get => _dreamRecording;
@@ -66,13 +76,13 @@ namespace DreamKeeper.Models
                 if (_dreamRecording != value)
                 {
                     _dreamRecording = value;
-                    OnPropertyChanged(nameof(DreamRecording));
                     HasUnsavedChanges = true;
+                    OnPropertyChanged(nameof(DreamRecording));
                 }
             }
         }
-        
-        private bool _hasUnsavedChanges;
+
+        // UI-only properties - do NOT trigger dirty tracking
         public bool HasUnsavedChanges
         {
             get => _hasUnsavedChanges;
@@ -86,7 +96,6 @@ namespace DreamKeeper.Models
             }
         }
 
-        private bool _isRecording;
         public bool IsRecording
         {
             get => _isRecording;
@@ -100,7 +109,6 @@ namespace DreamKeeper.Models
             }
         }
 
-        private bool _isEditingDate;
         public bool IsEditingDate
         {
             get => _isEditingDate;
@@ -114,15 +122,19 @@ namespace DreamKeeper.Models
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        
+        /// <summary>
+        /// Resets the dirty flag after a successful save.
+        /// </summary>
         public void MarkAsSaved()
         {
             HasUnsavedChanges = false;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -1,83 +1,101 @@
-﻿using Dapper;
+using Dapper;
 using DreamKeeper.Data.Models;
 using Microsoft.Data.Sqlite;
-using Muffle.Data.Services;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DreamKeeper.Data.Services
 {
-    public class SQLiteDbService
+    /// <summary>
+    /// Manages the raw SQLite connection and database lifecycle.
+    /// </summary>
+    public static class SQLiteDbService
     {
-        private static readonly string _connectionString = ConfigurationLoader.GetConnectionString("SqliteConnection");
-
-        public SQLiteDbService()
+        /// <summary>
+        /// Returns a new SqliteConnection using the connection string from appsettings.json.
+        /// </summary>
+        public static SqliteConnection CreateConnection()
         {
-
+            var connectionString = ConfigurationLoader.GetConnectionString();
+            return new SqliteConnection(connectionString);
         }
 
-        public static IDbConnection CreateConnection()
-        {
-            return new SqliteConnection(_connectionString);
-        }
-
+        /// <summary>
+        /// Creates the Dreams table (if not exists) and inserts seed data in DEBUG mode.
+        /// </summary>
         public static void InitializeDatabase()
         {
             using var connection = CreateConnection();
             connection.Open();
 
-            // Create Dreams table
-            var createDreamsTableQuery = @"
-            CREATE TABLE IF NOT EXISTS Dreams (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                DreamName TEXT NOT NULL,
-                DreamDescription TEXT,
-                DreamDate TEXT NOT NULL,
-                DreamRecording BLOB
-            );";
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS Dreams (
+                    Id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                    DreamName         TEXT NOT NULL,
+                    DreamDescription  TEXT,
+                    DreamDate         TEXT NOT NULL,
+                    DreamRecording    BLOB
+                );
+            ");
 
-            connection.Execute(createDreamsTableQuery);
-
-            // Seed data
-            var seedDataQueryDreams =
-                @"INSERT INTO Dreams (Id, DreamName, DreamDescription, DreamDate, DreamRecording)
-                    VALUES 
-                    (0, 'Catching a deer at Christmas on a motorcycle in Detroit.', 'Was initially driving my green Challenger then somehow changed to my motorcycle. It was snowing and the road was slushy. Ended up parking the bike when a baby fawn/doe nearly ran in front of me. I picked her up and we travelled across someones yard. It was Christmas. There was a shivering baby puppy out front, clearly about to be recieved as a gift before I awoke shortly after when I jumped the fence with the fawn.', '2024-05-24', NULL),
-                    (1, 'Picking up Dupreeh in the Challenger and robbing a gas station lol.', 'Was driving Challenger to store, robbed them, got cops to chase me, then awoke.', '2024-05-17', NULL),
-                    (2, 'Hanging out with dad watching TV and playing video games.', 'Was in my room in Washington chilling with dad.', '2024-05-22', NULL);";
-
-            try
+#if DEBUG
+            // Insert seed data only if the table is empty
+            var count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM Dreams;");
+            if (count == 0)
             {
-                connection.Execute(seedDataQueryDreams);
+                connection.Execute(@"
+                    INSERT INTO Dreams (DreamName, DreamDescription, DreamDate) VALUES
+                    (@Name1, @Desc1, @Date1),
+                    (@Name2, @Desc2, @Date2),
+                    (@Name3, @Desc3, @Date3);
+                ", new
+                {
+                    Name1 = "Flying Over Mountains",
+                    Desc1 = "I was soaring over snow-capped mountains with eagles. The wind was warm and I could see rivers winding through valleys below. It felt incredibly peaceful and free.",
+                    Date1 = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd"),
+
+                    Name2 = "Underwater City",
+                    Desc2 = "Discovered a hidden city beneath the ocean. The buildings were made of coral and crystal, and the inhabitants communicated through bioluminescent patterns. I could breathe underwater effortlessly.",
+                    Date2 = DateTime.Now.AddDays(-5).ToString("yyyy-MM-dd"),
+
+                    Name3 = "Time Travel Library",
+                    Desc3 = "Found a library where each book was a portal to a different time period. I opened one and stepped into ancient Rome during a festival. The colors and sounds were vivid and overwhelming.",
+                    Date3 = DateTime.Now.AddDays(-10).ToString("yyyy-MM-dd")
+                });
             }
-            catch (Exception) { }
+#endif
         }
 
+        /// <summary>
+        /// Drops the Dreams table (available but not called by default).
+        /// </summary>
         public static void DisposeDatabase()
         {
             using var connection = CreateConnection();
             connection.Open();
-            var dropDreamsTable = "DROP TABLE IF EXISTS Dreams";
-            connection.Execute(dropDreamsTable);
+            connection.Execute("DROP TABLE IF EXISTS Dreams;");
         }
 
-        public static async Task<int> SaveRecordingAsync(AudioRecording recording)
+        /// <summary>
+        /// Inserts an audio recording BLOB.
+        /// </summary>
+        public static async Task SaveRecordingAsync(AudioRecording recording)
         {
             using var connection = CreateConnection();
-            var query = "INSERT INTO Dreams (DreamRecording) VALUES (@AudioData); SELECT last_insert_rowid()";
-            return await connection.ExecuteScalarAsync<int>(query, new { AudioData = recording.AudioData });
+            await connection.OpenAsync();
+            await connection.ExecuteAsync(
+                "INSERT INTO AudioRecordings (AudioData) VALUES (@AudioData);",
+                new { recording.AudioData });
         }
 
-        public static async Task<AudioRecording> GetRecordingAsync(int id)
+        /// <summary>
+        /// Retrieves an audio recording by ID.
+        /// </summary>
+        public static async Task<AudioRecording?> GetRecordingAsync(int id)
         {
             using var connection = CreateConnection();
-            var query = "SELECT Id, DreamRecording AS AudioData FROM Dreams WHERE Id = @Id";
-            return await connection.QuerySingleOrDefaultAsync<AudioRecording>(query, new { Id = id });
+            await connection.OpenAsync();
+            return await connection.QueryFirstOrDefaultAsync<AudioRecording>(
+                "SELECT Id, AudioData FROM AudioRecordings WHERE Id = @Id;",
+                new { Id = id });
         }
     }
 }
