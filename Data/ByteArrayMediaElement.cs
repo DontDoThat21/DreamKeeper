@@ -5,9 +5,14 @@ namespace DreamKeeper.Data
     /// <summary>
     /// Custom MediaElement that bridges in-memory byte[] audio data to the file-based MediaSource API.
     /// Writes the byte array to a temporary file and sets Source = MediaSource.FromFile(path).
+    /// Defers source assignment until the native handler is connected to avoid silent failures
+    /// when used inside a CollectionView DataTemplate.
     /// </summary>
     public class ByteArrayMediaElement : MediaElement
     {
+        private byte[]? _pendingAudioData;
+        private bool _handlerConnected;
+
         public static readonly BindableProperty AudioDataProperty =
             BindableProperty.Create(
                 nameof(AudioData),
@@ -26,7 +31,29 @@ namespace DreamKeeper.Data
         {
             if (bindable is ByteArrayMediaElement element && newValue is byte[] data && data.Length > 0)
             {
-                element.LoadAudioFromBytes(data);
+                if (element._handlerConnected)
+                {
+                    element.LoadAudioFromBytes(data);
+                }
+                else
+                {
+                    // Handler not yet attached; defer until it is
+                    element._pendingAudioData = data;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            _handlerConnected = Handler is not null;
+
+            if (_handlerConnected && _pendingAudioData is { Length: > 0 })
+            {
+                LoadAudioFromBytes(_pendingAudioData);
+                _pendingAudioData = null;
             }
         }
 

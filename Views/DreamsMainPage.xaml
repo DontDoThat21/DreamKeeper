@@ -77,7 +77,7 @@
                         <Frame Style="{StaticResource DreamCardStyle}"
                                Margin="5,5"
                                Padding="15">
-                            <StackLayout Spacing="5">
+                            <StackLayout Spacing="3">
                                 <!-- Title -->
                                 <Label Text="{Binding DreamName}"
                                        Style="{StaticResource DreamTitleStyle}"
@@ -104,13 +104,13 @@
                                         Margin="0,5"
                                         MinimumHeightRequest="80" />
 
-                                <!-- Audio Player (only visible when recording exists) -->
                                 <Grid IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
                                       MinimumHeightRequest="120"
                                       Margin="0,5">
                                     <data:ByteArrayMediaElement AudioData="{Binding DreamRecording}"
                                                                 MinimumHeightRequest="120"
                                                                 ShouldAutoPlay="False"
+                                                                ShouldShowPlaybackControls="True"
                                                                 VerticalOptions="Fill"
                                                                 HorizontalOptions="Fill" />
                                 </Grid>

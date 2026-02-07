@@ -279,7 +279,6 @@ namespace DreamKeeper.ViewModels
             string action = await Application.Current!.Windows[0].Page!.DisplayActionSheetAsync(
                 "Delete Recording?",
                 "Cancel",
-                null,
                 "Delete Recording");
 
             if (action == "Delete Recording")
