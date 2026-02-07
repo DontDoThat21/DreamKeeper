@@ -77,14 +77,16 @@
                         <Frame Style="{StaticResource DreamCardStyle}"
                                Margin="5,5"
                                Padding="15">
-                            <StackLayout Spacing="8">
+                            <StackLayout Spacing="5">
                                 <!-- Title -->
                                 <Label Text="{Binding DreamName}"
-                                       Style="{StaticResource DreamTitleStyle}" />
+                                       Style="{StaticResource DreamTitleStyle}"
+                                       Margin="0,5" />
 
                                 <!-- Date: tappable label / inline DatePicker toggle -->
                                 <Label Text="{Binding DreamDate, StringFormat='{0:MMMM dd, yyyy}'}"
                                        Style="{StaticResource DreamDateStyle}"
+                                       Margin="0,5"
                                        IsVisible="{Binding IsEditingDate, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Tapped="OnDateLabelTapped" />
@@ -92,27 +94,29 @@
                                 </Label>
                                 <DatePicker Date="{Binding DreamDate}"
                                             IsVisible="{Binding IsEditingDate, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Margin="0,5"
                                             DateSelected="OnDateSelected" />
 
                                 <!-- Description -->
                                 <Editor Text="{Binding DreamDescription}"
                                         AutoSize="TextChanges"
                                         Placeholder="Enter dream details here..."
+                                        Margin="0,5"
                                         MinimumHeightRequest="80" />
 
                                 <!-- Audio Player (only visible when recording exists) -->
                                 <Grid IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
-                                      HeightRequest="80"
-                                      Margin="0,4">
+                                      MinimumHeightRequest="120"
+                                      Margin="0,5">
                                     <data:ByteArrayMediaElement AudioData="{Binding DreamRecording}"
-                                                                HeightRequest="80"
+                                                                MinimumHeightRequest="120"
                                                                 ShouldAutoPlay="False"
                                                                 VerticalOptions="Fill"
                                                                 HorizontalOptions="Fill" />
                                 </Grid>
 
                                 <!-- Action buttons -->
-                                <HorizontalStackLayout Spacing="8">
+                                <HorizontalStackLayout Spacing="8" Margin="0,5">
                                     <!-- Record Button -->
                                     <Button Text="{Binding IsRecording, Converter={StaticResource BoolToRecordingTextConverter}}"
                                             BackgroundColor="{Binding IsRecording, Converter={StaticResource BoolToRecordingColorConverter}}"

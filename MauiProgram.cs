@@ -34,8 +34,10 @@ namespace DreamKeeper
                 return new DreamKeeper.Platforms.Android.Services.AudioRecorderService();
 #elif IOS
                 return new DreamKeeper.Platforms.iOS.Services.AudioRecorderService();
+#elif WINDOWS
+                return new DreamKeeper.Platforms.Windows.Services.AudioRecorderService();
 #else
-                throw new NotImplementedException("Audio recording service not available on this platform. Use Plugin.Maui.Audio instead.");
+                throw new NotImplementedException("Audio recording service not available on this platform.");
 #endif
             });
 
