@@ -13,13 +13,17 @@ namespace DreamKeeper
         {
             var builder = MauiApp.CreateBuilder();
             builder
-                .UseMauiApp<App>()
-                .UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true)
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
+                .UseMauiApp<App>();
+
+#if ANDROID26_0_OR_GREATER || IOS15_0_OR_GREATER || MACCATALYST15_0_OR_GREATER || TIZEN6_5_OR_GREATER || WINDOWS10_0_17763_0_OR_GREATER
+            builder.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true);
+#endif
+
+            builder.ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            });
 
             // ViewModel (singleton)
             builder.Services.AddSingleton<DreamsViewModel>();

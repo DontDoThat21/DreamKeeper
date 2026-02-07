@@ -395,13 +395,21 @@
 
     <!-- ========== Dream-Themed Custom Styles ========== -->
 
-    <!-- Dream Card Style: Frame with rounded corners, shadow, themed border -->
-    <Style x:Key="DreamCardStyle" TargetType="Frame">
-        <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="HasShadow" Value="True" />
+    <!-- Dream Card Style: Border with rounded corners, shadow, themed border -->
+    <Style x:Key="DreamCardStyle" TargetType="Border">
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+        <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="Padding" Value="15" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark=#1E1E1E}" />
-        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray900}}"
+                        Offset="0,2"
+                        Radius="8"
+                        Opacity="0.3" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Header Style: Bold 24pt header text -->

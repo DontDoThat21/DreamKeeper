@@ -23,7 +23,7 @@
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="10">
 
         <!-- Row 0: Header -->
-        <Frame Grid.Row="0"
+        <Border Grid.Row="0"
                Style="{StaticResource DreamCardStyle}"
                Padding="20"
                Margin="0,5">
@@ -33,7 +33,7 @@
                 <Label Text="Capture your dreams and insights"
                        Style="{StaticResource SubHeaderStyle}" />
             </StackLayout>
-        </Frame>
+        </Border>
 
         <!-- Row 1: Search bar + filter controls -->
         <StackLayout Grid.Row="1" Margin="0,5">
@@ -74,7 +74,7 @@
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame Style="{StaticResource DreamCardStyle}"
+                        <Border Style="{StaticResource DreamCardStyle}"
                                Margin="5,5"
                                Padding="15">
                             <StackLayout Spacing="3">
@@ -157,7 +157,7 @@
                                             Style="{StaticResource ActionButtonStyle}" />
                                 </HorizontalStackLayout>
                             </StackLayout>
-                        </Frame>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

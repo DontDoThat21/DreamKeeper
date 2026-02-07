@@ -55,9 +55,9 @@ namespace DreamKeeper.Views
                 var parent = button.Parent;
                 while (parent != null)
                 {
-                    if (parent is Frame frame)
+                    if (parent is Border border)
                     {
-                        var mediaElement = FindChildElement<ByteArrayMediaElement>(frame);
+                        var mediaElement = FindChildElement<ByteArrayMediaElement>(border);
                         if (mediaElement != null)
                         {
                             if (mediaElement.AudioData == null || !mediaElement.AudioData.SequenceEqual(dream.DreamRecording))
@@ -78,7 +78,7 @@ namespace DreamKeeper.Views
                             catch (Exception ex)
                             {
                                 System.Diagnostics.Debug.WriteLine($"Play button error: {ex.Message}");
-                                await DisplayAlert("Playback Error", "Unable to play the recording. Please try again.", "OK");
+                                await DisplayAlertAsync("Playback Error", "Unable to play the recording. Please try again.", "OK");
                             }
                         }
                         break;
