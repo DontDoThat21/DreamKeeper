@@ -43,17 +43,15 @@ namespace DreamKeeper.Views
         /// <summary>
         /// Play button click: finds ByteArrayMediaElement in the card and plays audio.
         /// </summary>
-        private void OnPlayButtonClicked(object? sender, EventArgs e)
+        private async void OnPlayButtonClicked(object? sender, EventArgs e)
         {
             if (sender is Button button && button.BindingContext is Dream dream)
             {
                 if (dream.DreamRecording == null || dream.DreamRecording.Length == 0)
                     return;
 
-                // Stop all other audio playback first
                 StopAllAudioPlayback();
 
-                // Find the ByteArrayMediaElement in the parent card
                 var parent = button.Parent;
                 while (parent != null)
                 {
@@ -62,8 +60,26 @@ namespace DreamKeeper.Views
                         var mediaElement = FindChildElement<ByteArrayMediaElement>(frame);
                         if (mediaElement != null)
                         {
-                            mediaElement.AudioData = dream.DreamRecording;
-                            mediaElement.Play();
+                            if (mediaElement.AudioData == null || !mediaElement.AudioData.SequenceEqual(dream.DreamRecording))
+                            {
+                                mediaElement.AudioData = dream.DreamRecording;
+
+                                if (DeviceInfo.Platform == DevicePlatform.Android)
+                                {
+                                    await Task.Delay(200);
+                                }
+                            }
+
+                            try
+                            {
+                                mediaElement.Play();
+                                System.Diagnostics.Debug.WriteLine("Play button clicked - playback started");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Play button error: {ex.Message}");
+                                await DisplayAlert("Playback Error", "Unable to play the recording. Please try again.", "OK");
+                            }
                         }
                         break;
                     }

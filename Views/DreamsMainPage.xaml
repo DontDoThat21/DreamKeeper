@@ -105,10 +105,10 @@
                                         MinimumHeightRequest="80" />
 
                                 <Grid IsVisible="{Binding DreamRecording, Converter={StaticResource ByteArrayToVisibilityConverter}}"
-                                      MinimumHeightRequest="120"
+                                      HeightRequest="120"
                                       Margin="0,5">
                                     <data:ByteArrayMediaElement AudioData="{Binding DreamRecording}"
-                                                                MinimumHeightRequest="120"
+                                                                HeightRequest="120"
                                                                 ShouldAutoPlay="False"
                                                                 ShouldShowPlaybackControls="True"
                                                                 VerticalOptions="Fill"
@@ -173,3 +173,4 @@
                 Margin="0,0,15,15" />
     </Grid>
 </ContentPage>
+
