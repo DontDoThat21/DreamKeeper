@@ -13,7 +13,8 @@ namespace DreamKeeper
         {
             var builder = MauiApp.CreateBuilder();
             builder
-                .UseMauiApp<App>();
+                .UseMauiApp<App>()
+                .UseMauiCommunityToolkit();
 
 #if ANDROID26_0_OR_GREATER || IOS15_0_OR_GREATER || MACCATALYST15_0_OR_GREATER || TIZEN6_5_OR_GREATER || WINDOWS10_0_17763_0_OR_GREATER
             builder.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true);
