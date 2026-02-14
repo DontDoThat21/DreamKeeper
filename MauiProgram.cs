@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui;
 using DreamKeeper.Data.Data;
 using DreamKeeper.Data.Services;
+using DreamKeeper.Services;
 using DreamKeeper.ViewModels;
 using Microsoft.Extensions.Logging;
 using Plugin.Maui.Audio;
@@ -45,6 +46,9 @@ namespace DreamKeeper
                 throw new NotImplementedException("Audio recording service not available on this platform.");
 #endif
             });
+
+            // Whisper transcription service (on-device, free)
+            builder.Services.AddSingleton<ITranscriptionService, WhisperTranscriptionService>();
 
             // Database initialization
             var dbPath = Path.Combine(FileSystem.AppDataDirectory, "dream_database.db3");

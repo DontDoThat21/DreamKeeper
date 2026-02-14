@@ -1,3 +1,4 @@
+using DreamKeeper.Data.Data;
 using DreamKeeper.Data.Models;
 using Plugin.Maui.Audio;
 
@@ -6,6 +7,7 @@ namespace DreamKeeper.Views
     public partial class DreamEntryPage : ContentPage
     {
         private readonly IAudioManager _audioManager;
+        private readonly ITranscriptionService? _transcriptionService;
         private IAudioRecorder? _audioRecorder;
         private byte[]? _recordedAudioBytes;
         private bool _isRecording;
@@ -16,14 +18,16 @@ namespace DreamKeeper.Views
         public event EventHandler<Dream>? DreamSaved;
 
         public DreamEntryPage()
-            : this(new AudioManager())
+            : this(new AudioManager(),
+                   Application.Current?.MainPage?.Handler?.MauiContext?.Services.GetService<ITranscriptionService>())
         {
         }
 
-        public DreamEntryPage(IAudioManager audioManager)
+        public DreamEntryPage(IAudioManager audioManager, ITranscriptionService? transcriptionService = null)
         {
             ArgumentNullException.ThrowIfNull(audioManager);
             _audioManager = audioManager;
+            _transcriptionService = transcriptionService;
             InitializeComponent();
         }
 
@@ -73,6 +77,46 @@ namespace DreamKeeper.Views
             _isRecording = false;
             RecordingButton.Text = "✅ Recording Added";
             RecordingStatusLabel.IsVisible = false;
+
+            await TranscribeRecordingAsync();
+        }
+
+        /// <summary>
+        /// Transcribes the recorded audio using Whisper and appends the result to the description editor.
+        /// </summary>
+        private async Task TranscribeRecordingAsync()
+        {
+            if (_transcriptionService is null || _recordedAudioBytes is null || _recordedAudioBytes.Length == 0)
+                return;
+
+            try
+            {
+                RecordingStatusLabel.Text = "Transcribing audio...";
+                RecordingStatusLabel.IsVisible = true;
+
+                var transcription = await Task.Run(() =>
+                    _transcriptionService.TranscribeAsync(_recordedAudioBytes));
+
+                if (!string.IsNullOrWhiteSpace(transcription))
+                {
+                    // Append to existing text or set if empty
+                    if (string.IsNullOrWhiteSpace(DescriptionEditor.Text))
+                    {
+                        DescriptionEditor.Text = transcription;
+                    }
+                    else
+                    {
+                        DescriptionEditor.Text = $"{DescriptionEditor.Text}\n{transcription}";
+                    }
+                }
+
+                RecordingStatusLabel.IsVisible = false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Transcription error: {ex.Message}");
+                RecordingStatusLabel.Text = "Transcription failed";
+            }
         }
 
         /// <summary>
