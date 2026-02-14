@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using DreamKeeper.Data.Data;
 using DreamKeeper.Data.Models;
 using DreamKeeper.Data.Services;
 using Plugin.Maui.Audio;
@@ -11,6 +12,7 @@ namespace DreamKeeper.ViewModels
     {
         private readonly DreamService _dreamService;
         private readonly IAudioManager _audioManager;
+        private readonly ITranscriptionService? _transcriptionService;
         private IAudioRecorder? _audioRecorder;
         private Dream? _currentlyRecordingDream;
 
@@ -25,10 +27,11 @@ namespace DreamKeeper.ViewModels
         private bool _showOnlyWithoutRecordings;
         private bool _isRefreshing;
 
-        public DreamsViewModel(DreamService dreamService, IAudioManager audioManager)
+        public DreamsViewModel(DreamService dreamService, IAudioManager audioManager, ITranscriptionService? transcriptionService = null)
         {
             _dreamService = dreamService;
             _audioManager = audioManager;
+            _transcriptionService = transcriptionService;
 
             ToggleRecordingCommand = new Command<Dream>(async (dream) => await ToggleRecording(dream));
             PlayRecordingCommand = new Command<Dream>((dream) => { /* Handled in code-behind */ });
@@ -242,6 +245,37 @@ namespace DreamKeeper.ViewModels
                 dream.HasUnsavedChanges = false;
                 _currentlyRecordingDream = null;
                 IsRecording = false;
+
+                await TranscribeAndAppendAsync(dream, audioBytes);
+            }
+        }
+
+        /// <summary>
+        /// Transcribes recorded audio and appends the text to the dream description.
+        /// </summary>
+        private async Task TranscribeAndAppendAsync(Dream dream, byte[] audioBytes)
+        {
+            if (_transcriptionService is null || audioBytes.Length == 0)
+                return;
+
+            try
+            {
+                var transcription = await Task.Run(() =>
+                    _transcriptionService.TranscribeAsync(audioBytes));
+
+                if (!string.IsNullOrWhiteSpace(transcription))
+                {
+                    dream.DreamDescription = string.IsNullOrWhiteSpace(dream.DreamDescription)
+                        ? transcription
+                        : $"{dream.DreamDescription}\n{transcription}";
+
+                    _dreamService.UpsertDream(dream);
+                    dream.MarkAsSaved();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Transcription error: {ex.Message}");
             }
         }
 

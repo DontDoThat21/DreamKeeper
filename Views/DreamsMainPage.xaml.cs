@@ -1,4 +1,5 @@
 using DreamKeeper.Data;
+using DreamKeeper.Data.Data;
 using DreamKeeper.Data.Models;
 using DreamKeeper.Data.Services;
 using DreamKeeper.ViewModels;
@@ -13,7 +14,8 @@ namespace DreamKeeper.Views
         public DreamsMainPage()
         {
             InitializeComponent();
-            _viewModel = new DreamsViewModel(new DreamService(), new AudioManager());
+            var transcriptionService = Application.Current?.MainPage?.Handler?.MauiContext?.Services.GetService<ITranscriptionService>();
+            _viewModel = new DreamsViewModel(new DreamService(), new AudioManager(), transcriptionService);
             BindingContext = _viewModel;
         }
 
