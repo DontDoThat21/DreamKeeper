@@ -39,17 +39,11 @@
             <SearchBar Placeholder="Search dreams..."
                        Text="{Binding SearchText}"
                        SearchCommand="{x:Null}" />
-            <HorizontalStackLayout Spacing="10" Padding="5,0">
+            <HorizontalStackLayout Spacing="10" Padding="5,0" HorizontalOptions="Center">
                 <CheckBox IsChecked="{Binding ShowOnlyWithRecordings}" />
                 <Label Text="Has Recording" VerticalOptions="Center" />
                 <CheckBox IsChecked="{Binding ShowOnlyWithoutRecordings}" />
                 <Label Text="No Recording" VerticalOptions="Center" />
-                <Button Text="Clear Filters"
-                        Command="{Binding ClearFiltersCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        FontSize="12"
-                        Padding="8,4"
-                        HeightRequest="36" />
             </HorizontalStackLayout>
         </StackLayout>
 

@@ -38,7 +38,7 @@ namespace DreamKeeper.ViewModels
             SaveDreamCommand = new Command<Dream>(async (dream) => await SaveDream(dream));
             DeleteDreamCommand = new Command<Dream>(async (dream) => await DeleteDream(dream));
             DeleteRecordingCommand = new Command<Dream>(async (dream) => await DeleteRecording(dream));
-            ClearFiltersCommand = new Command(ClearFilters);
+
             RefreshCommand = new Command(() => { LoadDreams(); IsRefreshing = false; });
 
             LoadDreams();
@@ -124,7 +124,7 @@ namespace DreamKeeper.ViewModels
         public ICommand SaveDreamCommand { get; }
         public ICommand DeleteDreamCommand { get; }
         public ICommand DeleteRecordingCommand { get; }
-        public ICommand ClearFiltersCommand { get; }
+
         public ICommand RefreshCommand { get; }
 
         public bool IsRefreshing
@@ -330,13 +330,6 @@ namespace DreamKeeper.ViewModels
             }
         }
 
-        private void ClearFilters()
-        {
-            SearchText = string.Empty;
-            ShowOnlyWithRecordings = false;
-            ShowOnlyWithoutRecordings = false;
-            ApplyFilters();
-        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
