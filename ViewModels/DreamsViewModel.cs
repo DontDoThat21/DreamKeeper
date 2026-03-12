@@ -317,12 +317,13 @@ namespace DreamKeeper.ViewModels
 
             if (action == "Delete Recording")
             {
-                // Set DreamRecording = NULL via raw SQL
+                // Set DreamRecording = NULL via raw SQL and reclaim disk space
                 using var connection = SQLiteDbService.CreateConnection();
                 await connection.OpenAsync();
                 await Dapper.SqlMapper.ExecuteAsync(connection,
                     "UPDATE Dreams SET DreamRecording = NULL WHERE Id = @id",
                     new { id = dream.Id });
+                await Dapper.SqlMapper.ExecuteAsync(connection, "VACUUM");
 
                 dream.DreamRecording = null;
                 dream.HasUnsavedChanges = false;

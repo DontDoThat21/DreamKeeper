@@ -55,6 +55,7 @@ namespace DreamKeeper.Data.Services
             using var connection = SQLiteDbService.CreateConnection();
             connection.Open();
             connection.Execute("DELETE FROM Dreams WHERE Id = @Id;", new { Id = dreamId });
+            connection.Execute("VACUUM;");
         }
 
         /// <summary>
