@@ -72,8 +72,8 @@
                                Padding="15">
                             <StackLayout Spacing="3">
                                 <!-- Title -->
-                                <Label Text="{Binding DreamName}"
-                                       Style="{StaticResource DreamTitleStyle}"
+                                <Entry Text="{Binding DreamName}"
+                                       Style="{StaticResource DreamTitleEntryStyle}"
                                        Margin="0,5" />
 
                                 <!-- Date: tappable label / inline DatePicker toggle -->

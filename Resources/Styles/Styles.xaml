@@ -434,6 +434,14 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource DreamPurple}}" />
     </Style>
 
+    <!-- Dream Title Entry Style: Editable bold 18pt primary-color dream title -->
+    <Style x:Key="DreamTitleEntryStyle" TargetType="Entry">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource DreamPurple}}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
     <!-- Dream Date Style: 14pt end-aligned underlined date -->
     <Style x:Key="DreamDateStyle" TargetType="Label">
         <Setter Property="FontSize" Value="14" />
